@@ -8,21 +8,25 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.lni.datalni.ui.GraphFormController"
-      spacing="12.0" prefWidth="440.0">
+      spacing="12.0">
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
     </padding>
 
     <VBox spacing="6.0">
-        <Label text="Título *"/>
-        <TextField fx:id="titleField" promptText="Título do gráfico"/>
+        <TextFlow>
+            <Text text="Título "/><Text text="*" styleClass="required-asterisk"/>
+        </TextFlow>
+        <TextField fx:id="titleField" promptText="Título do gráfico" prefColumnCount="30"/>
     </VBox>
     <VBox spacing="6.0">
         <Label text="Descrição"/>
-        <TextField fx:id="descriptionField" promptText="Descrição"/>
+        <TextField fx:id="descriptionField" promptText="Descrição" prefColumnCount="30"/>
     </VBox>
 
     <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>

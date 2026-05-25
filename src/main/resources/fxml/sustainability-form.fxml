@@ -11,33 +11,44 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.lni.datalni.ui.SustainabilityFormController"
-      spacing="12.0" prefWidth="520.0">
+      spacing="12.0">
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
     </padding>
 
     <GridPane hgap="10.0" vgap="10.0">
-        <Label text="Ano *" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <Spinner fx:id="yearSpinner" editable="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <TextFlow GridPane.rowIndex="0" GridPane.columnIndex="0">
+            <Text text="Ano "/><Text text="*" styleClass="required-asterisk"/>
+        </TextFlow>
+        <Spinner fx:id="yearSpinner" editable="true" prefWidth="120.0"
+                 GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
         <Label text="ODS" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <Spinner fx:id="odsSpinner" editable="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Spinner fx:id="odsSpinner" editable="true" prefWidth="120.0"
+                 GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <Label text="Título *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="titleField" prefWidth="360.0" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <TextFlow GridPane.rowIndex="2" GridPane.columnIndex="0">
+            <Text text="Título "/><Text text="*" styleClass="required-asterisk"/>
+        </TextFlow>
+        <TextField fx:id="titleField" prefColumnCount="34"
+                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
         <Label text="Autor" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="authorField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <TextField fx:id="authorField" prefColumnCount="32"
+                   GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
         <Label text="Link" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <TextField fx:id="linkField" promptText="https://..." GridPane.rowIndex="4"
-                   GridPane.columnIndex="1"/>
+        <TextField fx:id="linkField" promptText="https://..." prefColumnCount="38"
+                   GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
         <Label text="Publicação" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <DatePicker fx:id="publishedPicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <DatePicker fx:id="publishedPicker" prefWidth="180.0"
+                    GridPane.rowIndex="5" GridPane.columnIndex="1"/>
     </GridPane>
 
     <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>

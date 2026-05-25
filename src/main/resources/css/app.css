@@ -61,3 +61,9 @@
     -fx-text-fill: -color-danger-fg;
     -fx-font-size: 12px;
 }
+
+/* Red asterisk marking required fields. Text nodes are coloured via -fx-fill. */
+.required-asterisk {
+    -fx-fill: -color-danger-fg;
+    -fx-font-weight: bold;
+}
