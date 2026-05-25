@@ -3,14 +3,14 @@ package com.lni.datalni.ui;
 import atlantafx.base.controls.ToggleSwitch;
 import com.lni.datalni.security.AuthenticationService;
 import com.lni.datalni.security.CurrentUser;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-/** Main window: left navigation, module content area, status bar, theme/logout menu. */
+/** Main window: top bar (logout, theme toggle, module navigation), content area, status bar. */
 @Component
 @Scope("prototype")
 public class MainController {
@@ -25,6 +25,7 @@ public class MainController {
     @FXML private Label userLabel;
     @FXML private Label roleLabel;
     @FXML private ToggleSwitch themeToggle;
+    @FXML private FontIcon themeIcon;
 
     public MainController(SpringFxmlLoader fxmlLoader, CurrentUser currentUser,
                           ThemeManager themeManager, AuthenticationService authenticationService,
@@ -42,9 +43,18 @@ public class MainController {
         roleLabel.setText(currentUser.getRolesDisplay());
 
         themeToggle.setSelected(themeManager.isDark());
-        themeToggle.selectedProperty().addListener((obs, was, dark) -> themeManager.apply(dark));
+        updateThemeIcon(themeManager.isDark());
+        themeToggle.selectedProperty().addListener((obs, was, dark) -> {
+            themeManager.apply(dark);
+            updateThemeIcon(dark);
+        });
 
         showGraphs();
+    }
+
+    /** Sun when dark (tap to go light), moon when light (tap to go dark). */
+    private void updateThemeIcon(boolean dark) {
+        themeIcon.setIconLiteral(dark ? "fas-sun" : "fas-moon");
     }
 
     @FXML
@@ -66,11 +76,6 @@ public class MainController {
     private void onLogout() {
         authenticationService.logout();
         stageManager.showLogin();
-    }
-
-    @FXML
-    private void onExit() {
-        Platform.exit();
     }
 
     private void setContent(String fxml) {
