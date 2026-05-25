@@ -1,12 +1,14 @@
 package com.lni.datalni.ui;
 
+import com.lni.datalni.ui.support.SvgIcons;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -19,10 +21,10 @@ import java.util.function.Consumer;
 public class StageManager {
 
     private static final String APP_CSS = "/css/app.css";
-    private static final String APP_ICON = "/images/app-icon.png";
+    private static final String APP_ICON = "/images/app-icon.svg";
 
     private final SpringFxmlLoader fxmlLoader;
-    private final Image appIcon = loadIcon();
+    private final List<Image> appIcons = loadIcons();
     private Stage primaryStage;
 
     public StageManager(SpringFxmlLoader fxmlLoader) {
@@ -90,17 +92,19 @@ public class StageManager {
     }
 
     private void applyIcon(Stage stage) {
-        if (appIcon != null) {
-            stage.getIcons().add(appIcon);
-        }
+        stage.getIcons().addAll(appIcons);
     }
 
-    private Image loadIcon() {
-        try (InputStream in = getClass().getResourceAsStream(APP_ICON)) {
-            return in == null ? null : new Image(in);
-        } catch (Exception e) {
-            return null;
+    /** Render the SVG app icon at a few sizes so the OS picks the sharpest for each use. */
+    private List<Image> loadIcons() {
+        List<Image> icons = new ArrayList<>();
+        for (int size : new int[]{256, 128, 64, 32}) {
+            Image icon = SvgIcons.render(APP_ICON, size);
+            if (icon != null) {
+                icons.add(icon);
+            }
         }
+        return icons;
     }
 
     private void applyCss(Scene scene) {
