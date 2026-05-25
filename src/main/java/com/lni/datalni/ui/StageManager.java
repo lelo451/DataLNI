@@ -1,9 +1,13 @@
 package com.lni.datalni.ui;
 
 import com.lni.datalni.ui.support.SvgIcons;
+import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.robot.Robot;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Component;
 
@@ -48,18 +52,64 @@ public class StageManager {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.sizeToScene();
-        primaryStage.centerOnScreen();
         primaryStage.show();
+        // Defer one pulse: the window is realised and the Robot reports the real pointer.
+        Platform.runLater(this::centerOnPointerMonitor);
     }
 
     public void showMain() {
         SpringFxmlLoader.FxView<Object> view = fxmlLoader.load("main.fxml");
-        Scene scene = new Scene(view.root(), 1180, 760);
+
+        // Cap the window to the monitor under the pointer so it fits on smaller screens.
+        Rectangle2D monitor = pointerScreen().getVisualBounds();
+        double width = Math.min(1180, monitor.getWidth());
+        double height = Math.min(760, monitor.getHeight());
+
+        Scene scene = new Scene(view.root(), width, height);
         applyCss(scene);
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
-        primaryStage.centerOnScreen();
+        primaryStage.setWidth(width);
+        primaryStage.setHeight(height);
         primaryStage.show();
+        Platform.runLater(this::centerOnPointerMonitor);
+    }
+
+    /** Centres the visible primary stage on the monitor under the mouse pointer. */
+    private void centerOnPointerMonitor() {
+        double w = primaryStage.getWidth();
+        double h = primaryStage.getHeight();
+        if (Double.isNaN(w) || Double.isNaN(h) || w <= 0 || h <= 0) {
+            primaryStage.centerOnScreen();
+            return;
+        }
+        Rectangle2D b = pointerScreen().getVisualBounds();
+        primaryStage.setX(b.getMinX() + Math.max(0, (b.getWidth() - w) / 2));
+        primaryStage.setY(b.getMinY() + Math.max(0, (b.getHeight() - h) / 2));
+    }
+
+    /**
+     * The monitor under the mouse pointer. Uses the JavaFX {@link Robot} for the global
+     * pointer position (same coordinate space as {@link Screen}, unlike AWT) and never
+     * throws — falls back to the primary screen.
+     */
+    private Screen pointerScreen() {
+        try {
+            Robot robot = new Robot();
+            // JavaFX Robot on Linux reports the pointer relative to the primary monitor's
+            // origin, so add it back to get true global coordinates (no-op when primary is
+            // at 0,0).
+            Rectangle2D primary = Screen.getPrimary().getBounds();
+            double mx = robot.getMouseX() + primary.getMinX();
+            double my = robot.getMouseY() + primary.getMinY();
+            List<Screen> screens = Screen.getScreensForRectangle(mx, my, 1, 1);
+            if (!screens.isEmpty()) {
+                return screens.get(0);
+            }
+        } catch (Exception ignored) {
+            // pointer unavailable -> primary screen
+        }
+        return Screen.getPrimary();
     }
 
     /**
