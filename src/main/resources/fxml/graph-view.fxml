@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.lni.datalni.ui.GraphViewController"
@@ -18,12 +19,22 @@
     <HBox spacing="8.0" alignment="CENTER_LEFT">
         <Label text="Gráficos" styleClass="module-title"/>
         <TextField fx:id="searchField" promptText="Buscar título/descrição" prefWidth="240.0"/>
-        <Button text="Buscar" onAction="#onSearch"/>
-        <Button text="Atualizar" onAction="#onRefresh"/>
+        <Button text="Buscar" onAction="#onSearch">
+            <graphic><FontIcon iconLiteral="fas-search"/></graphic>
+        </Button>
+        <Button text="Atualizar" onAction="#onRefresh">
+            <graphic><FontIcon iconLiteral="fas-sync"/></graphic>
+        </Button>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="newGraphButton" text="Novo" onAction="#onNewGraph"/>
-        <Button fx:id="editGraphButton" text="Editar" onAction="#onEditGraph"/>
-        <Button fx:id="deleteGraphButton" text="Excluir" onAction="#onDeleteGraph"/>
+        <Button fx:id="newGraphButton" text="Novo" onAction="#onNewGraph">
+            <graphic><FontIcon iconLiteral="fas-plus"/></graphic>
+        </Button>
+        <Button fx:id="editGraphButton" text="Editar" onAction="#onEditGraph">
+            <graphic><FontIcon iconLiteral="fas-edit"/></graphic>
+        </Button>
+        <Button fx:id="deleteGraphButton" text="Excluir" onAction="#onDeleteGraph">
+            <graphic><FontIcon iconLiteral="fas-trash"/></graphic>
+        </Button>
     </HBox>
 
     <TableView fx:id="graphTable" VBox.vgrow="ALWAYS">
@@ -37,9 +48,15 @@
     <HBox spacing="8.0" alignment="CENTER_LEFT">
         <Label text="Números (UEM) do gráfico selecionado" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="newDataNumberButton" text="Novo número" onAction="#onNewDataNumber"/>
-        <Button fx:id="editDataNumberButton" text="Editar" onAction="#onEditDataNumber"/>
-        <Button fx:id="deleteDataNumberButton" text="Excluir" onAction="#onDeleteDataNumber"/>
+        <Button fx:id="newDataNumberButton" text="Novo número" onAction="#onNewDataNumber">
+            <graphic><FontIcon iconLiteral="fas-plus"/></graphic>
+        </Button>
+        <Button fx:id="editDataNumberButton" text="Editar" onAction="#onEditDataNumber">
+            <graphic><FontIcon iconLiteral="fas-edit"/></graphic>
+        </Button>
+        <Button fx:id="deleteDataNumberButton" text="Excluir" onAction="#onDeleteDataNumber">
+            <graphic><FontIcon iconLiteral="fas-trash"/></graphic>
+        </Button>
     </HBox>
 
     <TableView fx:id="dataNumberTable" VBox.vgrow="ALWAYS">

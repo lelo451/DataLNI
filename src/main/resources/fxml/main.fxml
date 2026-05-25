@@ -51,9 +51,15 @@
                 <Insets top="16.0" right="12.0" bottom="16.0" left="12.0"/>
             </padding>
             <Label text="Módulos" styleClass="nav-header"/>
-            <Button text="Gráficos" maxWidth="Infinity" onAction="#showGraphs"/>
-            <Button text="Projetos" maxWidth="Infinity" onAction="#showProjects"/>
-            <Button text="Sustentabilidade" maxWidth="Infinity" onAction="#showSustainability"/>
+            <Button text="Gráficos" maxWidth="Infinity" alignment="BASELINE_LEFT" onAction="#showGraphs">
+                <graphic><FontIcon iconLiteral="fas-chart-line"/></graphic>
+            </Button>
+            <Button text="Projetos" maxWidth="Infinity" alignment="BASELINE_LEFT" onAction="#showProjects">
+                <graphic><FontIcon iconLiteral="fas-project-diagram"/></graphic>
+            </Button>
+            <Button text="Sustentabilidade" maxWidth="Infinity" alignment="BASELINE_LEFT" onAction="#showSustainability">
+                <graphic><FontIcon iconLiteral="fas-leaf"/></graphic>
+            </Button>
         </VBox>
     </left>
 
