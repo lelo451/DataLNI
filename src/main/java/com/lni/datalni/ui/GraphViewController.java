@@ -14,6 +14,7 @@ import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.RowSelection;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -58,6 +59,9 @@ public class GraphViewController {
     @FXML private Button deleteDataNumberButton;
     @FXML private Button importDataNumberButton;
 
+    private RowSelection<GraphDto> graphSelection;
+    private RowSelection<DataNumberDto> dataNumberSelection;
+
     public GraphViewController(GraphService graphService, DataNumberService dataNumberService,
                                CurrentUser currentUser, StageManager stageManager, AsyncRunner async) {
         this.graphService = graphService;
@@ -95,7 +99,29 @@ public class GraphViewController {
         graphTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, old, selected) -> loadDataNumbers(selected));
 
+        graphSelection = RowSelection.install(graphTable);
+        graphSelection.setOnChange(this::updateGraphButtons);
+        dataNumberSelection = RowSelection.install(dataNumberTable);
+        dataNumberSelection.setOnChange(this::updateDataNumberButtons);
+        updateGraphButtons();
+        updateDataNumberButtons();
+
         loadGraphs();
+    }
+
+    /** New/Edit act on a single row; only Delete stays enabled when several are selected. */
+    private void updateGraphButtons() {
+        int count = graphSelection.count();
+        newGraphButton.setDisable(count > 1);
+        editGraphButton.setDisable(count != 1);
+        deleteGraphButton.setDisable(count == 0);
+    }
+
+    private void updateDataNumberButtons() {
+        int count = dataNumberSelection.count();
+        newDataNumberButton.setDisable(count > 1);
+        editDataNumberButton.setDisable(count != 1);
+        deleteDataNumberButton.setDisable(count == 0);
     }
 
     @FXML
@@ -140,26 +166,30 @@ public class GraphViewController {
 
     @FXML
     private void onEditGraph() {
-        GraphDto selected = graphTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        List<GraphDto> chosen = graphSelection.getSelected();
+        if (chosen.size() != 1) {
             return;
         }
         stageManager.<GraphFormController>openModal("graph-form.fxml", Messages.get("graph.form.edit.title"), form -> {
-            form.setModel(selected);
+            form.setModel(chosen.get(0));
             form.setOnSaved(this::loadGraphs);
         });
     }
 
     @FXML
     private void onDeleteGraph() {
-        GraphDto selected = graphTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        List<GraphDto> chosen = graphSelection.getSelected();
+        if (chosen.isEmpty()) {
             return;
         }
-        if (Dialogs.confirm(Messages.get("graph.delete.title"),
-                Messages.get("graph.delete.message", String.valueOf(selected.getId())))) {
+        String message = chosen.size() == 1
+                ? Messages.get("graph.delete.message", String.valueOf(chosen.get(0).getId()))
+                : Messages.get("delete.confirmMany", String.valueOf(chosen.size()));
+        if (Dialogs.confirm(Messages.get("graph.delete.title"), message)) {
             async.run(() -> {
-                graphService.delete(selected.getId());
+                for (GraphDto graph : chosen) {
+                    graphService.delete(graph.getId());
+                }
                 return null;
             }, ok -> loadGraphs());
         }
@@ -207,15 +237,15 @@ public class GraphViewController {
     @FXML
     private void onEditDataNumber() {
         GraphDto graph = graphTable.getSelectionModel().getSelectedItem();
-        DataNumberDto selected = dataNumberTable.getSelectionModel().getSelectedItem();
-        if (graph == null || selected == null) {
+        List<DataNumberDto> chosen = dataNumberSelection.getSelected();
+        if (graph == null || chosen.size() != 1) {
             return;
         }
         stageManager.<DataNumberFormController>openModal(
                 "datanumber-form.fxml", Messages.get("datanumber.form.edit.title"), form -> {
                     form.setGraphs(graphTable.getItems());
                     form.setGraphId(graph.getId());
-                    form.setModel(selected);
+                    form.setModel(chosen.get(0));
                     form.setOnSaved(() -> loadDataNumbers(graph));
                 });
     }
@@ -223,14 +253,18 @@ public class GraphViewController {
     @FXML
     private void onDeleteDataNumber() {
         GraphDto graph = graphTable.getSelectionModel().getSelectedItem();
-        DataNumberDto selected = dataNumberTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        List<DataNumberDto> chosen = dataNumberSelection.getSelected();
+        if (chosen.isEmpty()) {
             return;
         }
-        if (Dialogs.confirm(Messages.get("datanumber.delete.title"),
-                Messages.get("datanumber.delete.message", String.valueOf(selected.getId())))) {
+        String message = chosen.size() == 1
+                ? Messages.get("datanumber.delete.message", String.valueOf(chosen.get(0).getId()))
+                : Messages.get("delete.confirmMany", String.valueOf(chosen.size()));
+        if (Dialogs.confirm(Messages.get("datanumber.delete.title"), message)) {
             async.run(() -> {
-                dataNumberService.delete(selected.getId());
+                for (DataNumberDto number : chosen) {
+                    dataNumberService.delete(number.getId());
+                }
                 return null;
             }, ok -> loadDataNumbers(graph));
         }

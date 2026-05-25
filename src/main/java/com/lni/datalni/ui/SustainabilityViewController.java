@@ -13,6 +13,7 @@ import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.LinkOpener;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.SdgCatalog;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -54,6 +55,8 @@ public class SustainabilityViewController {
     @FXML private Button deleteButton;
     @FXML private Button importButton;
 
+    private RowSelection<SustainabilityDto> selection;
+
     public SustainabilityViewController(SustainabilityService sustainabilityService,
                                         CurrentUser currentUser, StageManager stageManager,
                                         AsyncRunner async) {
@@ -84,7 +87,19 @@ public class SustainabilityViewController {
         deleteButton.setVisible(canEdit);
         importButton.setVisible(canEdit);
 
+        selection = RowSelection.install(table);
+        selection.setOnChange(this::updateActionButtons);
+        updateActionButtons();
+
         load();
+    }
+
+    /** New/Edit act on a single row; only Delete stays enabled when several are selected. */
+    private void updateActionButtons() {
+        int count = selection.count();
+        newButton.setDisable(count > 1);
+        editButton.setDisable(count != 1);
+        deleteButton.setDisable(count == 0);
     }
 
     @FXML
@@ -132,13 +147,13 @@ public class SustainabilityViewController {
 
     @FXML
     private void onEdit() {
-        SustainabilityDto selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        List<SustainabilityDto> chosen = selection.getSelected();
+        if (chosen.size() != 1) {
             return;
         }
         stageManager.<SustainabilityFormController>openModal(
                 "sustainability-form.fxml", Messages.get("sustainability.form.edit.title"), form -> {
-                    form.setModel(selected);
+                    form.setModel(chosen.get(0));
                     form.setOnSaved(this::load);
                 });
     }
@@ -173,14 +188,18 @@ public class SustainabilityViewController {
 
     @FXML
     private void onDelete() {
-        SustainabilityDto selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        List<SustainabilityDto> chosen = selection.getSelected();
+        if (chosen.isEmpty()) {
             return;
         }
-        if (Dialogs.confirm(Messages.get("sustainability.delete.title"),
-                Messages.get("sustainability.delete.message", String.valueOf(selected.getId())))) {
+        String message = chosen.size() == 1
+                ? Messages.get("sustainability.delete.message", String.valueOf(chosen.get(0).getId()))
+                : Messages.get("delete.confirmMany", String.valueOf(chosen.size()));
+        if (Dialogs.confirm(Messages.get("sustainability.delete.title"), message)) {
             async.run(() -> {
-                sustainabilityService.delete(selected.getId());
+                for (SustainabilityDto item : chosen) {
+                    sustainabilityService.delete(item.getId());
+                }
                 return null;
             }, ok -> load());
         }
