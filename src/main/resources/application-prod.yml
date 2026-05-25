@@ -1,0 +1,21 @@
+# Production profile: real DB2 + Active Directory. All secrets come from the environment
+# / OS credential store — never commit them.
+spring:
+  datasource:
+    url: ${DB2_URL}
+    username: ${DB2_USER}
+    password: ${DB2_PASSWORD}
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+    hikari:
+      maximum-pool-size: 5
+
+app:
+  ldap:
+    url: ${LDAP_URL:ldaps://ad-host:636}
+    domain: ${LDAP_DOMAIN:corp.example.com}
+    base-dn: ${LDAP_BASE_DN:DC=corp,DC=example,DC=com}
+    group-search-base: ${LDAP_GROUP_BASE:OU=Groups}
+    role-mapping:
+      LNI_ADMINS: LNI_ADMIN
+      LNI_EDITORS: LNI_EDITOR
+      LNI_USERS: LNI_VIEWER

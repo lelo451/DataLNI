@@ -1,0 +1,19 @@
+# Development profile: in-memory auth (admin/editor/viewer), but a real development DB2.
+# Export DB2_URL / DB2_USER / DB2_PASSWORD before launching (the app needs a live DB2).
+#
+#   export DB2_URL="jdbc:db2://db2dev-host:50000/PLDDEV:currentSchema=PLD;"
+#   export DB2_USER="..."
+#   export DB2_PASSWORD="..."
+spring:
+  datasource:
+    url: ${DB2_URL}
+    username: ${DB2_USER}
+    password: ${DB2_PASSWORD}
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+    hikari:
+      maximum-pool-size: 5        # desktop app — small pool
+
+logging:
+  level:
+    com.lni.datalni: DEBUG
+    org.hibernate.SQL: DEBUG

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: DataLNI
+  # Runs the dev profile (in-memory users) unless an explicit profile is set.
+  profiles:
+    default: dev
+  jpa:
+    hibernate:
+      # Never create/alter the corporate schema; mappings are validated against it.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.default_schema: PLD
+      hibernate.dialect: org.hibernate.dialect.DB2Dialect
+
+logging:
+  level:
+    root: INFO
+    com.lni.datalni: INFO
