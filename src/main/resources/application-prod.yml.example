@@ -1,0 +1,28 @@
+# Template for the `prod` profile. Copy to `application-prod.yml` (git-ignored) and fill in.
+# All secrets come from the environment / OS credential store — never commit them.
+#
+#   export DB2_URL="jdbc:db2://<host>:50000/<database>:currentSchema=PLD;"
+#   export DB2_USER=... DB2_PASSWORD=...
+#   # Only if the LDAP search needs a service account (otherwise leave blank = anonymous):
+#   export LDAP_MANAGER_DN="..." LDAP_MANAGER_PASSWORD="..."
+spring:
+  datasource:
+    url: ${DB2_URL}
+    username: ${DB2_USER}
+    password: ${DB2_PASSWORD}
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+    hikari:
+      maximum-pool-size: 5
+
+app:
+  ldap:
+    # Standard (OpenLDAP-style) directory: locate the user by filter, then bind.
+    url: ldap://<ldap-host>:389
+    base-dn: dc=example,dc=org
+    user-search-base: ou=People
+    user-search-filter: (uid={0})
+    # Optional service account for the search bind; blank = anonymous read.
+    manager-dn: ${LDAP_MANAGER_DN:}
+    manager-password: ${LDAP_MANAGER_PASSWORD:}
+    # Base role granted to every authenticated user; elevate specific users elsewhere.
+    default-role: LNI_VIEWER

@@ -1,0 +1,21 @@
+# Template for the `dev` profile. Copy to `application-dev.yml` (git-ignored) and fill in.
+#
+# Dev uses in-memory auth (admin/admin, editor/editor, viewer/viewer) but a REAL
+# development DB2. Provide the connection either inline or via environment variables:
+#
+#   export DB2_URL="jdbc:db2://<dev-host>:50000/<database>:currentSchema=PLD;"
+#   export DB2_USER="..."
+#   export DB2_PASSWORD="..."
+spring:
+  datasource:
+    url: ${DB2_URL}
+    username: ${DB2_USER}
+    password: ${DB2_PASSWORD}
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+    hikari:
+      maximum-pool-size: 5        # desktop app — small pool
+
+logging:
+  level:
+    com.lni.datalni: DEBUG
+    org.hibernate.SQL: DEBUG
