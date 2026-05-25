@@ -194,7 +194,8 @@ public class GraphViewController {
     }
 
     private void loadGraphs() {
-        async.run(() -> graphService.search(graphCriteria, PageRequest.of(graphPage, PAGE_SIZE)),
+        async.run(() -> graphService.search(graphCriteria,
+                        PageRequest.of(graphPage, PAGE_SIZE, Sort.by("id"))),
                 this::populateGraphs);
     }
 
@@ -256,7 +257,8 @@ public class GraphViewController {
             return;
         }
         async.run(() -> dataNumberService.listByGraph(graph.getId(),
-                        PageRequest.of(dnPage, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "year", "month"))),
+                        PageRequest.of(dnPage, PAGE_SIZE,
+                                Sort.by(Sort.Direction.DESC, "year", "month").and(Sort.by("id")))),
                 this::populateDataNumbers);
     }
 

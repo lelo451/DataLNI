@@ -30,6 +30,7 @@ import javafx.scene.control.TextField;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -145,7 +146,7 @@ public class SustainabilityViewController {
     }
 
     private void load() {
-        async.run(() -> sustainabilityService.search(criteria, PageRequest.of(page, PAGE_SIZE)),
+        async.run(() -> sustainabilityService.search(criteria, PageRequest.of(page, PAGE_SIZE, Sort.by("id"))),
                 this::populate);
     }
 

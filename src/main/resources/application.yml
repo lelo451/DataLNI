@@ -11,7 +11,10 @@ spring:
     open-in-view: false
     properties:
       hibernate.default_schema: PLD
-      hibernate.dialect: org.hibernate.dialect.DB2Dialect
+      # The corporate DB2 is LUW 9.7, which lacks the "OFFSET ? ROWS FETCH FIRST ?"
+      # syntax that Hibernate 7's stock DB2Dialect always emits (SQLCODE -104). This
+      # custom dialect restores the legacy ROW_NUMBER()/FETCH FIRST pagination.
+      hibernate.dialect: com.lni.datalni.config.DB2v97Dialect
 
 logging:
   level:
