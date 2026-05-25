@@ -6,9 +6,11 @@ import com.lni.datalni.ui.imports.ParsedFile;
 import com.lni.datalni.ui.imports.RowImporter;
 import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.PreferencesStore;
 import com.lni.datalni.ui.support.SvgIcons;
 import com.lni.datalni.ui.support.TabularImporter;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -37,11 +39,15 @@ public class StageManager {
     private static final String APP_ICON = "/images/app-icon.svg";
 
     private final SpringFxmlLoader fxmlLoader;
+    private final PreferencesStore preferences;
     private final List<Image> appIcons = loadIcons();
     private Stage primaryStage;
+    private ChangeListener<Number> boundsListener;
+    private ChangeListener<Boolean> maximizedListener;
 
-    public StageManager(SpringFxmlLoader fxmlLoader) {
+    public StageManager(SpringFxmlLoader fxmlLoader, PreferencesStore preferences) {
         this.fxmlLoader = fxmlLoader;
+        this.preferences = preferences;
     }
 
     public void setPrimaryStage(Stage primaryStage) {
@@ -55,6 +61,9 @@ public class StageManager {
     }
 
     public void showLogin() {
+        // Stop tracking before the login window resizes the shared stage, or the small
+        // login geometry would clobber the saved main-window bounds.
+        stopTrackingWindowState();
         SpringFxmlLoader.FxView<Object> view = fxmlLoader.load("login.fxml");
         Scene scene = new Scene(view.root());
         applyCss(scene);
@@ -78,10 +87,67 @@ public class StageManager {
         applyCss(scene);
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
-        primaryStage.setWidth(width);
-        primaryStage.setHeight(height);
-        primaryStage.show();
-        Platform.runLater(this::centerOnPointerMonitor);
+
+        // Restore the last placement if it still lands on a connected monitor; otherwise
+        // fall back to a default-sized window centred on the pointer's monitor.
+        var saved = preferences.windowBounds().filter(this::isVisibleOnAnyScreen);
+        if (saved.isPresent()) {
+            PreferencesStore.WindowBounds b = saved.get();
+            primaryStage.setX(b.x());
+            primaryStage.setY(b.y());
+            primaryStage.setWidth(b.width());
+            primaryStage.setHeight(b.height());
+            primaryStage.setMaximized(b.maximized());
+            primaryStage.show();
+        } else {
+            primaryStage.setWidth(width);
+            primaryStage.setHeight(height);
+            primaryStage.show();
+            Platform.runLater(this::centerOnPointerMonitor);
+        }
+        trackWindowState(primaryStage);
+    }
+
+    /**
+     * Saves the window placement whenever the user moves, resizes, or maximises it, and
+     * flushes the preferences when the window is hidden. Only non-maximized geometry is
+     * stored as the restore bounds, so un-maximising returns to a sensible size.
+     */
+    private void trackWindowState(Stage stage) {
+        boundsListener = (obs, old, value) -> {
+            if (!stage.isMaximized()) {
+                preferences.saveWindowBounds(stage.getX(), stage.getY(),
+                        stage.getWidth(), stage.getHeight());
+            }
+        };
+        maximizedListener = (obs, old, max) -> preferences.saveWindowMaximized(max);
+        stage.xProperty().addListener(boundsListener);
+        stage.yProperty().addListener(boundsListener);
+        stage.widthProperty().addListener(boundsListener);
+        stage.heightProperty().addListener(boundsListener);
+        stage.maximizedProperty().addListener(maximizedListener);
+        stage.setOnHiding(e -> preferences.flush());
+    }
+
+    /** Detaches the window-state listeners so other screens can resize the stage freely. */
+    private void stopTrackingWindowState() {
+        if (boundsListener != null) {
+            primaryStage.xProperty().removeListener(boundsListener);
+            primaryStage.yProperty().removeListener(boundsListener);
+            primaryStage.widthProperty().removeListener(boundsListener);
+            primaryStage.heightProperty().removeListener(boundsListener);
+            boundsListener = null;
+        }
+        if (maximizedListener != null) {
+            primaryStage.maximizedProperty().removeListener(maximizedListener);
+            maximizedListener = null;
+        }
+        preferences.flush();
+    }
+
+    /** True when the saved rectangle overlaps any current monitor (so it's reachable). */
+    private boolean isVisibleOnAnyScreen(PreferencesStore.WindowBounds b) {
+        return !Screen.getScreensForRectangle(b.x(), b.y(), b.width(), b.height()).isEmpty();
     }
 
     /** Centres the visible primary stage on the monitor under the mouse pointer. */
