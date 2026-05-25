@@ -68,6 +68,9 @@ public class SustainabilityViewController {
         linkColumn.setCellValueFactory(Cells.of(s -> s));
         linkColumn.setCellFactory(col -> new LinkCell());
 
+        // Stretch columns to fill the full table width (prefWidth acts as the share).
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
         boolean canEdit = currentUser.canEdit();
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);

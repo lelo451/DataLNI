@@ -70,6 +70,10 @@ public class GraphViewController {
                 dn -> dn.getValue() == null ? "" : dn.getValue().toPlainString()));
         dnClazzColumn.setCellValueFactory(Cells.of(DataNumberDto::getClazz));
 
+        // Stretch columns to fill the full table width (prefWidth acts as the share).
+        graphTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        dataNumberTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
         boolean canEdit = currentUser.canEdit();
         newGraphButton.setVisible(canEdit);
         editGraphButton.setVisible(canEdit);

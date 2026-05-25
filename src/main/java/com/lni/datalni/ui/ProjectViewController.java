@@ -56,6 +56,9 @@ public class ProjectViewController {
         eprotocolColumn.setCellValueFactory(Cells.of(ProjectDto::getEprotocol));
         odsColumn.setCellValueFactory(Cells.of(p -> SdgCatalog.label(p.getOds())));
 
+        // Stretch columns to fill the full table width (prefWidth acts as the share).
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
         boolean canEdit = currentUser.canEdit();
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);
