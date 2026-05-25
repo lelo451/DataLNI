@@ -36,30 +36,45 @@
                             <TextFlow GridPane.rowIndex="0" GridPane.columnIndex="0">
                                 <Text text="Gráfico "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <ComboBox fx:id="graphCombo" prefWidth="260.0"
-                                      GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                <ComboBox fx:id="graphCombo" prefWidth="260.0"/>
+                                <Label fx:id="graphIdError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <TextFlow GridPane.rowIndex="1" GridPane.columnIndex="0">
                                 <Text text="Mês "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <ComboBox fx:id="monthCombo" prefWidth="200.0"
-                                      GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                                <ComboBox fx:id="monthCombo" prefWidth="200.0"/>
+                                <Label fx:id="monthError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <TextFlow GridPane.rowIndex="2" GridPane.columnIndex="0">
                                 <Text text="Ano "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <Spinner fx:id="yearSpinner" editable="true" prefWidth="120.0"
-                                     GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                                <Spinner fx:id="yearSpinner" editable="true" prefWidth="120.0"/>
+                                <Label fx:id="yearError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <TextFlow GridPane.rowIndex="3" GridPane.columnIndex="0">
                                 <Text text="Valor "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <TextField fx:id="valueField" promptText="0,00" prefColumnCount="14"
-                                       GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                                <TextField fx:id="valueField" promptText="0,00" prefColumnCount="14"/>
+                                <Label fx:id="valueError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <Label text="Classe" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                            <TextField fx:id="clazzField" prefColumnCount="30"
-                                       GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                                <TextField fx:id="clazzField" prefColumnCount="30"/>
+                                <Label fx:id="clazzError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
                         </GridPane>
                         <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>
                     </VBox>

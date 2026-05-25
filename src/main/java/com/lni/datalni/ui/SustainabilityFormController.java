@@ -5,9 +5,11 @@ import com.lni.datalni.service.dto.SustainabilityDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
+import com.lni.datalni.ui.support.FormValidation;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.Spinners;
 import com.lni.datalni.ui.support.StagingSupport;
+import jakarta.validation.Validator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
@@ -30,6 +32,7 @@ public class SustainabilityFormController implements DialogAware {
 
     private final SustainabilityService sustainabilityService;
     private final AsyncRunner async;
+    private final Validator validator;
 
     @FXML private TabPane tabPane;
     @FXML private Tab listTab;
@@ -40,6 +43,11 @@ public class SustainabilityFormController implements DialogAware {
     @FXML private TextField authorField;
     @FXML private TextField linkField;
     @FXML private DatePicker publishedPicker;
+    @FXML private Label yearError;
+    @FXML private Label odsError;
+    @FXML private Label titleError;
+    @FXML private Label authorError;
+    @FXML private Label linkError;
     @FXML private Label errorLabel;
     @FXML private Button addButton;
     @FXML private Button saveAllButton;
@@ -49,10 +57,13 @@ public class SustainabilityFormController implements DialogAware {
     private Runnable onSaved;
     private SustainabilityDto model;
     private StagingSupport<SustainabilityDto> staging;
+    private FormValidation<SustainabilityDto> validation;
 
-    public SustainabilityFormController(SustainabilityService sustainabilityService, AsyncRunner async) {
+    public SustainabilityFormController(SustainabilityService sustainabilityService, AsyncRunner async,
+                                        Validator validator) {
         this.sustainabilityService = sustainabilityService;
         this.async = async;
+        this.validator = validator;
     }
 
     @FXML
@@ -62,6 +73,12 @@ public class SustainabilityFormController implements DialogAware {
         Spinners.integer(odsSpinner, 1, 17, 1);
         publishedPicker.setConverter(Formats.dateConverter());
         publishedPicker.setPromptText("dd/mm/aaaa");
+        validation = new FormValidation<>(validator);
+        validation.field("year", yearError, yearSpinner.valueProperty());
+        validation.field("ods", odsError, odsSpinner.valueProperty());
+        validation.field("title", titleError, titleField.textProperty());
+        validation.field("author", authorError, authorField.textProperty());
+        validation.field("link", linkError, linkField.textProperty());
         staging = new StagingSupport<>(tabPane, listTab, pendingList,
                 addButton, saveAllButton, saveButton, async, this::summary);
     }
@@ -100,7 +117,11 @@ public class SustainabilityFormController implements DialogAware {
     @FXML
     private void onAdd() {
         errorLabel.setVisible(false);
-        staging.add(buildDto(false));
+        SustainabilityDto dto = buildDto(false);
+        if (!validation.validate(dto)) {
+            return;
+        }
+        staging.add(dto);
         titleField.clear();
         authorField.clear();
         linkField.clear();
@@ -121,6 +142,9 @@ public class SustainabilityFormController implements DialogAware {
     private void onSave() {
         errorLabel.setVisible(false);
         SustainabilityDto dto = buildDto(true);
+        if (!validation.validate(dto)) {
+            return;
+        }
         async.run(() -> sustainabilityService.update(dto),
                 saved -> finish(),
                 error -> showError(ErrorTranslator.toMessage(error)));

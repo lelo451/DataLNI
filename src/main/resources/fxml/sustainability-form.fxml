@@ -36,26 +36,41 @@
                             <TextFlow GridPane.rowIndex="0" GridPane.columnIndex="0">
                                 <Text text="Ano "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <Spinner fx:id="yearSpinner" editable="true" prefWidth="120.0"
-                                     GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                <Spinner fx:id="yearSpinner" editable="true" prefWidth="120.0"/>
+                                <Label fx:id="yearError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <Label text="ODS" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <Spinner fx:id="odsSpinner" editable="true" prefWidth="120.0"
-                                     GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                                <Spinner fx:id="odsSpinner" editable="true" prefWidth="120.0"/>
+                                <Label fx:id="odsError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <TextFlow GridPane.rowIndex="2" GridPane.columnIndex="0">
                                 <Text text="Título "/><Text text="*" styleClass="required-asterisk"/>
                             </TextFlow>
-                            <TextField fx:id="titleField" prefColumnCount="34"
-                                       GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                                <TextField fx:id="titleField" prefColumnCount="34"/>
+                                <Label fx:id="titleError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <Label text="Autor" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                            <TextField fx:id="authorField" prefColumnCount="32"
-                                       GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                                <TextField fx:id="authorField" prefColumnCount="32"/>
+                                <Label fx:id="authorError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <Label text="Link" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                            <TextField fx:id="linkField" promptText="https://..." prefColumnCount="38"
-                                       GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            <VBox spacing="2.0" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                                <TextField fx:id="linkField" promptText="https://..." prefColumnCount="38"/>
+                                <Label fx:id="linkError" styleClass="field-error" wrapText="true"
+                                       managed="false" visible="false"/>
+                            </VBox>
 
                             <Label text="Publicação" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
                             <DatePicker fx:id="publishedPicker" prefWidth="180.0"

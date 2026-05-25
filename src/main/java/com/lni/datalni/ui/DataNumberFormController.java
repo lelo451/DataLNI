@@ -6,9 +6,11 @@ import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
+import com.lni.datalni.ui.support.FormValidation;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.Spinners;
 import com.lni.datalni.ui.support.StagingSupport;
+import jakarta.validation.Validator;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -36,6 +38,7 @@ public class DataNumberFormController implements DialogAware {
 
     private final DataNumberService dataNumberService;
     private final AsyncRunner async;
+    private final Validator validator;
 
     @FXML private TabPane tabPane;
     @FXML private Tab listTab;
@@ -45,6 +48,11 @@ public class DataNumberFormController implements DialogAware {
     @FXML private Spinner<Integer> yearSpinner;
     @FXML private TextField valueField;
     @FXML private TextField clazzField;
+    @FXML private Label graphIdError;
+    @FXML private Label monthError;
+    @FXML private Label yearError;
+    @FXML private Label valueError;
+    @FXML private Label clazzError;
     @FXML private Label errorLabel;
     @FXML private Button addButton;
     @FXML private Button saveAllButton;
@@ -54,10 +62,13 @@ public class DataNumberFormController implements DialogAware {
     private Runnable onSaved;
     private DataNumberDto model;
     private StagingSupport<DataNumberDto> staging;
+    private FormValidation<DataNumberDto> validation;
 
-    public DataNumberFormController(DataNumberService dataNumberService, AsyncRunner async) {
+    public DataNumberFormController(DataNumberService dataNumberService, AsyncRunner async,
+                                    Validator validator) {
         this.dataNumberService = dataNumberService;
         this.async = async;
+        this.validator = validator;
     }
 
     @FXML
@@ -84,6 +95,12 @@ public class DataNumberFormController implements DialogAware {
         monthCombo.setConverter(Formats.monthConverter());
         monthCombo.setValue(java.time.LocalDate.now().getMonthValue());
         Spinners.integer(yearSpinner, 1900, 2999, java.time.Year.now().getValue());
+        validation = new FormValidation<>(validator);
+        validation.field("graphId", graphIdError, graphCombo.valueProperty());
+        validation.field("month", monthError, monthCombo.valueProperty());
+        validation.field("year", yearError, yearSpinner.valueProperty());
+        validation.field("value", valueError, valueField.textProperty());
+        validation.field("clazz", clazzError, clazzField.textProperty());
         staging = new StagingSupport<>(tabPane, listTab, pendingList,
                 addButton, saveAllButton, saveButton, async, this::summary);
     }
@@ -144,12 +161,11 @@ public class DataNumberFormController implements DialogAware {
     @FXML
     private void onAdd() {
         errorLabel.setVisible(false);
-        try {
-            staging.add(buildDto(false));
-        } catch (IllegalArgumentException ex) {
-            showError(ex.getMessage());
+        DataNumberDto dto = buildDto(false);
+        if (!validateForm(dto)) {
             return;
         }
+        staging.add(dto);
         valueField.clear();   // keep graph/month/year/class for the next entry
         valueField.requestFocus();
     }
@@ -166,16 +182,27 @@ public class DataNumberFormController implements DialogAware {
     @FXML
     private void onSave() {
         errorLabel.setVisible(false);
-        DataNumberDto dto;
-        try {
-            dto = buildDto(true);
-        } catch (IllegalArgumentException ex) {
-            showError(ex.getMessage());
+        DataNumberDto dto = buildDto(true);
+        if (!validateForm(dto)) {
             return;
         }
         async.run(() -> dataNumberService.update(dto),
                 saved -> finish(),
                 error -> showError(ErrorTranslator.toMessage(error)));
+    }
+
+    /**
+     * Validates the DTO against its bean constraints, then refines the {@code value} message:
+     * a non-blank but unparseable amount reads "invalid number" rather than "required".
+     */
+    private boolean validateForm(DataNumberDto dto) {
+        boolean valid = validation.validate(dto);
+        String text = valueField.getText();
+        if (text != null && !text.isBlank() && dto.getValue() == null) {
+            validation.show("value", Messages.get("datanumber.value.invalid"));
+            valid = false;
+        }
+        return valid;
     }
 
     @FXML
@@ -184,21 +211,28 @@ public class DataNumberFormController implements DialogAware {
     }
 
     private DataNumberDto buildDto(boolean keepId) {
-        BigDecimal value;
-        try {
-            value = Formats.parseNumber(valueField.getText());
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(Messages.get("datanumber.value.invalid"));
-        }
         GraphDto selectedGraph = graphCombo.getValue();
         return DataNumberDto.builder()
                 .id(keepId && model != null ? model.getId() : null)
                 .graphId(selectedGraph == null ? null : selectedGraph.getId())
                 .month(monthCombo.getValue())
                 .year(yearSpinner.getValue())
-                .value(value)
+                .value(parseValueOrNull())
                 .clazz(emptyToNull(clazzField.getText()))
                 .build();
+    }
+
+    /** Parses the amount, returning {@code null} when blank or unparseable (flagged later). */
+    private BigDecimal parseValueOrNull() {
+        String text = valueField.getText();
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        try {
+            return Formats.parseNumber(text);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private Optional<String> persist(DataNumberDto dto) {

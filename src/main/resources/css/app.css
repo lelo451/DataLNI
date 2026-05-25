@@ -62,6 +62,12 @@
     -fx-font-size: 12px;
 }
 
+/* Per-field inline validation message shown beneath the offending input. */
+.field-error {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 11px;
+}
+
 /* Red asterisk marking required fields. Text nodes are coloured via -fx-fill. */
 .required-asterisk {
     -fx-fill: -color-danger-fg;

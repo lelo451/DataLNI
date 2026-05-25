@@ -4,8 +4,10 @@ import com.lni.datalni.service.GraphService;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.FormValidation;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.StagingSupport;
+import jakarta.validation.Validator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,12 +28,15 @@ public class GraphFormController implements DialogAware {
 
     private final GraphService graphService;
     private final AsyncRunner async;
+    private final Validator validator;
 
     @FXML private TabPane tabPane;
     @FXML private Tab listTab;
     @FXML private ListView<GraphDto> pendingList;
     @FXML private TextField titleField;
     @FXML private TextField descriptionField;
+    @FXML private Label titleError;
+    @FXML private Label descriptionError;
     @FXML private Label errorLabel;
     @FXML private Button addButton;
     @FXML private Button saveAllButton;
@@ -41,15 +46,20 @@ public class GraphFormController implements DialogAware {
     private Runnable onSaved;
     private GraphDto model;
     private StagingSupport<GraphDto> staging;
+    private FormValidation<GraphDto> validation;
 
-    public GraphFormController(GraphService graphService, AsyncRunner async) {
+    public GraphFormController(GraphService graphService, AsyncRunner async, Validator validator) {
         this.graphService = graphService;
         this.async = async;
+        this.validator = validator;
     }
 
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
+        validation = new FormValidation<>(validator);
+        validation.field("title", titleError, titleField.textProperty());
+        validation.field("description", descriptionError, descriptionField.textProperty());
         staging = new StagingSupport<>(tabPane, listTab, pendingList,
                 addButton, saveAllButton, saveButton, async, this::summary);
     }
@@ -80,7 +90,11 @@ public class GraphFormController implements DialogAware {
     @FXML
     private void onAdd() {
         errorLabel.setVisible(false);
-        staging.add(buildDto(false));
+        GraphDto dto = buildDto(false);
+        if (!validation.validate(dto)) {
+            return;
+        }
+        staging.add(dto);
         titleField.clear();
         descriptionField.clear();
         titleField.requestFocus();
@@ -99,6 +113,9 @@ public class GraphFormController implements DialogAware {
     private void onSave() {
         errorLabel.setVisible(false);
         GraphDto dto = buildDto(true);
+        if (!validation.validate(dto)) {
+            return;
+        }
         async.run(() -> graphService.update(dto),
                 saved -> finish(),
                 error -> showError(ErrorTranslator.toMessage(error)));

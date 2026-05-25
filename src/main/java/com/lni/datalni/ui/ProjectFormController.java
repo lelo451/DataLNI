@@ -4,9 +4,11 @@ import com.lni.datalni.service.ProjectService;
 import com.lni.datalni.service.dto.ProjectDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.FormValidation;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.Spinners;
 import com.lni.datalni.ui.support.StagingSupport;
+import jakarta.validation.Validator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,6 +30,7 @@ public class ProjectFormController implements DialogAware {
 
     private final ProjectService projectService;
     private final AsyncRunner async;
+    private final Validator validator;
 
     @FXML private TabPane tabPane;
     @FXML private Tab listTab;
@@ -36,6 +39,10 @@ public class ProjectFormController implements DialogAware {
     @FXML private TextField eprotocolField;
     @FXML private TextField titleField;
     @FXML private TextField coordinatorField;
+    @FXML private Label odsError;
+    @FXML private Label eprotocolError;
+    @FXML private Label titleError;
+    @FXML private Label coordinatorError;
     @FXML private Label errorLabel;
     @FXML private Button addButton;
     @FXML private Button saveAllButton;
@@ -45,16 +52,23 @@ public class ProjectFormController implements DialogAware {
     private Runnable onSaved;
     private ProjectDto model;
     private StagingSupport<ProjectDto> staging;
+    private FormValidation<ProjectDto> validation;
 
-    public ProjectFormController(ProjectService projectService, AsyncRunner async) {
+    public ProjectFormController(ProjectService projectService, AsyncRunner async, Validator validator) {
         this.projectService = projectService;
         this.async = async;
+        this.validator = validator;
     }
 
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
         Spinners.integer(odsSpinner, 1, 17, 1);
+        validation = new FormValidation<>(validator);
+        validation.field("ods", odsError, odsSpinner.valueProperty());
+        validation.field("eprotocol", eprotocolError, eprotocolField.textProperty());
+        validation.field("title", titleError, titleField.textProperty());
+        validation.field("coordinator", coordinatorError, coordinatorField.textProperty());
         staging = new StagingSupport<>(tabPane, listTab, pendingList,
                 addButton, saveAllButton, saveButton, async, this::summary);
     }
@@ -89,7 +103,11 @@ public class ProjectFormController implements DialogAware {
     @FXML
     private void onAdd() {
         errorLabel.setVisible(false);
-        staging.add(buildDto(false));
+        ProjectDto dto = buildDto(false);
+        if (!validation.validate(dto)) {
+            return;
+        }
+        staging.add(dto);
         eprotocolField.clear();
         titleField.clear();
         coordinatorField.clear();
@@ -109,6 +127,9 @@ public class ProjectFormController implements DialogAware {
     private void onSave() {
         errorLabel.setVisible(false);
         ProjectDto dto = buildDto(true);
+        if (!validation.validate(dto)) {
+            return;
+        }
         async.run(() -> projectService.update(dto),
                 saved -> finish(),
                 error -> showError(ErrorTranslator.toMessage(error)));
