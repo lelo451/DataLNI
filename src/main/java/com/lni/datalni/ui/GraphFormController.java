@@ -4,14 +4,22 @@ import com.lni.datalni.service.GraphService;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.StagingSupport;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-/** Create/edit form for a {@link GraphDto}. */
+import java.util.Optional;
+
+/** Create (add several, save all) / edit form for a {@link GraphDto}. */
 @Component
 @Scope("prototype")
 public class GraphFormController implements DialogAware {
@@ -19,13 +27,20 @@ public class GraphFormController implements DialogAware {
     private final GraphService graphService;
     private final AsyncRunner async;
 
+    @FXML private TabPane tabPane;
+    @FXML private Tab listTab;
+    @FXML private ListView<GraphDto> pendingList;
     @FXML private TextField titleField;
     @FXML private TextField descriptionField;
     @FXML private Label errorLabel;
+    @FXML private Button addButton;
+    @FXML private Button saveAllButton;
+    @FXML private Button saveButton;
 
     private Stage dialogStage;
     private Runnable onSaved;
     private GraphDto model;
+    private StagingSupport<GraphDto> staging;
 
     public GraphFormController(GraphService graphService, AsyncRunner async) {
         this.graphService = graphService;
@@ -35,6 +50,12 @@ public class GraphFormController implements DialogAware {
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
+        staging = new StagingSupport<>(tabPane, listTab, pendingList,
+                addButton, saveAllButton, saveButton, async, this::summary);
+    }
+
+    private String summary(GraphDto g) {
+        return g.getTitle() == null || g.getTitle().isBlank() ? "(sem título)" : g.getTitle();
     }
 
     @Override
@@ -46,9 +67,10 @@ public class GraphFormController implements DialogAware {
         this.onSaved = onSaved;
     }
 
-    /** @param model the row to edit, or {@code null} to create. */
+    /** @param model the row to edit, or {@code null} to create (add several). */
     public void setModel(GraphDto model) {
         this.model = model;
+        staging.setEditing(model != null);
         if (model != null) {
             titleField.setText(model.getTitle());
             descriptionField.setText(model.getDescription());
@@ -56,30 +78,64 @@ public class GraphFormController implements DialogAware {
     }
 
     @FXML
-    private void onSave() {
-        GraphDto dto = GraphDto.builder()
-                .id(model == null ? null : model.getId())
-                .title(emptyToNull(titleField.getText()))
-                .description(emptyToNull(descriptionField.getText()))
-                .build();
+    private void onAdd() {
         errorLabel.setVisible(false);
-        async.run(
-                () -> model == null ? graphService.create(dto) : graphService.update(dto),
-                saved -> {
-                    if (onSaved != null) {
-                        onSaved.run();
-                    }
-                    dialogStage.close();
-                },
-                error -> {
-                    errorLabel.setText(ErrorTranslator.toMessage(error));
-                    errorLabel.setVisible(true);
-                });
+        staging.add(buildDto(false));
+        titleField.clear();
+        descriptionField.clear();
+        titleField.requestFocus();
+    }
+
+    @FXML
+    private void onSaveAll() {
+        if (staging.isEmpty()) {
+            showError(Messages.get("batch.empty"));
+            return;
+        }
+        staging.saveAll(this::persist, this::finish);
+    }
+
+    @FXML
+    private void onSave() {
+        errorLabel.setVisible(false);
+        GraphDto dto = buildDto(true);
+        async.run(() -> graphService.update(dto),
+                saved -> finish(),
+                error -> showError(ErrorTranslator.toMessage(error)));
     }
 
     @FXML
     private void onCancel() {
         dialogStage.close();
+    }
+
+    private GraphDto buildDto(boolean keepId) {
+        return GraphDto.builder()
+                .id(keepId && model != null ? model.getId() : null)
+                .title(emptyToNull(titleField.getText()))
+                .description(emptyToNull(descriptionField.getText()))
+                .build();
+    }
+
+    private Optional<String> persist(GraphDto dto) {
+        try {
+            graphService.create(dto);
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(ErrorTranslator.toMessage(e));
+        }
+    }
+
+    private void finish() {
+        if (onSaved != null) {
+            onSaved.run();
+        }
+        dialogStage.close();
+    }
+
+    private void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 
     private static String emptyToNull(String value) {
