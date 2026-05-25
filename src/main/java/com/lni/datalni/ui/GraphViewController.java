@@ -9,6 +9,8 @@ import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.Formats;
+import com.lni.datalni.ui.support.Messages;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -41,7 +43,7 @@ public class GraphViewController {
     @FXML private Button deleteGraphButton;
 
     @FXML private TableView<DataNumberDto> dataNumberTable;
-    @FXML private TableColumn<DataNumberDto, Integer> dnMonthColumn;
+    @FXML private TableColumn<DataNumberDto, String> dnMonthColumn;
     @FXML private TableColumn<DataNumberDto, Integer> dnYearColumn;
     @FXML private TableColumn<DataNumberDto, String> dnValueColumn;
     @FXML private TableColumn<DataNumberDto, String> dnClazzColumn;
@@ -64,10 +66,9 @@ public class GraphViewController {
         graphTitleColumn.setCellValueFactory(Cells.of(GraphDto::getTitle));
         graphDescriptionColumn.setCellValueFactory(Cells.of(GraphDto::getDescription));
 
-        dnMonthColumn.setCellValueFactory(Cells.of(DataNumberDto::getMonth));
+        dnMonthColumn.setCellValueFactory(Cells.of(dn -> Formats.monthName(dn.getMonth())));
         dnYearColumn.setCellValueFactory(Cells.of(DataNumberDto::getYear));
-        dnValueColumn.setCellValueFactory(Cells.of(
-                dn -> dn.getValue() == null ? "" : dn.getValue().toPlainString()));
+        dnValueColumn.setCellValueFactory(Cells.of(dn -> Formats.number(dn.getValue())));
         dnClazzColumn.setCellValueFactory(Cells.of(DataNumberDto::getClazz));
 
         // Stretch columns to fill the full table width (prefWidth acts as the share).
@@ -146,8 +147,8 @@ public class GraphViewController {
         if (selected == null) {
             return;
         }
-        if (Dialogs.confirm("Delete graph",
-                "Delete graph #" + selected.getId() + " and its data numbers reference?")) {
+        if (Dialogs.confirm(Messages.get("graph.delete.title"),
+                Messages.get("graph.delete.message", String.valueOf(selected.getId())))) {
             async.run(() -> {
                 graphService.delete(selected.getId());
                 return null;
@@ -161,7 +162,8 @@ public class GraphViewController {
     private void onNewDataNumber() {
         GraphDto graph = graphTable.getSelectionModel().getSelectedItem();
         if (graph == null) {
-            Dialogs.info("Select a graph", "Pick a graph first to add a data number to it.");
+            Dialogs.info(Messages.get("graph.selectFirst.title"),
+                    Messages.get("graph.selectFirst.message"));
             return;
         }
         stageManager.<DataNumberFormController>openModal(
@@ -194,7 +196,8 @@ public class GraphViewController {
         if (selected == null) {
             return;
         }
-        if (Dialogs.confirm("Delete data number", "Delete data number #" + selected.getId() + "?")) {
+        if (Dialogs.confirm(Messages.get("datanumber.delete.title"),
+                Messages.get("datanumber.delete.message", String.valueOf(selected.getId())))) {
             async.run(() -> {
                 dataNumberService.delete(selected.getId());
                 return null;

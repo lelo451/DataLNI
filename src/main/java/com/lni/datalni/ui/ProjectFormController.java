@@ -4,10 +4,10 @@ import com.lni.datalni.service.ProjectService;
 import com.lni.datalni.service.dto.ProjectDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.Spinners;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.springframework.context.annotation.Scope;
@@ -39,7 +39,7 @@ public class ProjectFormController implements DialogAware {
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
-        odsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 17, 1));
+        Spinners.integer(odsSpinner, 1, 17, 1);
     }
 
     @Override

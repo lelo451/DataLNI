@@ -4,11 +4,12 @@ import com.lni.datalni.service.SustainabilityService;
 import com.lni.datalni.service.dto.SustainabilityDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.Formats;
+import com.lni.datalni.ui.support.Spinners;
 import javafx.fxml.FXML;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.springframework.context.annotation.Scope;
@@ -42,10 +43,10 @@ public class SustainabilityFormController implements DialogAware {
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
-        int currentYear = java.time.Year.now().getValue();
-        yearSpinner.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1900, 2999, currentYear));
-        odsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 17, 1));
+        Spinners.integer(yearSpinner, 1900, 2999, java.time.Year.now().getValue());
+        Spinners.integer(odsSpinner, 1, 17, 1);
+        publishedPicker.setConverter(Formats.dateConverter());
+        publishedPicker.setPromptText("dd/mm/aaaa");
     }
 
     @Override

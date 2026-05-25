@@ -4,16 +4,21 @@ import com.lni.datalni.service.DataNumberService;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.Formats;
+import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.Spinners;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.stream.IntStream;
 
 /** Create/edit form for a {@link DataNumberDto}, scoped to a parent graph. */
 @Component
@@ -23,7 +28,7 @@ public class DataNumberFormController implements DialogAware {
     private final DataNumberService dataNumberService;
     private final AsyncRunner async;
 
-    @FXML private Spinner<Integer> monthSpinner;
+    @FXML private ComboBox<Integer> monthCombo;
     @FXML private Spinner<Integer> yearSpinner;
     @FXML private TextField valueField;
     @FXML private TextField clazzField;
@@ -43,10 +48,11 @@ public class DataNumberFormController implements DialogAware {
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
-        int currentYear = java.time.Year.now().getValue();
-        monthSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 12, 1));
-        yearSpinner.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1900, 2999, currentYear));
+        monthCombo.setItems(FXCollections.observableArrayList(
+                IntStream.rangeClosed(1, 12).boxed().toList()));
+        monthCombo.setConverter(Formats.monthConverter());
+        monthCombo.setValue(java.time.LocalDate.now().getMonthValue());
+        Spinners.integer(yearSpinner, 1900, 2999, java.time.Year.now().getValue());
     }
 
     @Override
@@ -68,9 +74,13 @@ public class DataNumberFormController implements DialogAware {
     public void setModel(DataNumberDto model) {
         this.model = model;
         if (model != null) {
-            monthSpinner.getValueFactory().setValue(model.getMonth());
-            yearSpinner.getValueFactory().setValue(model.getYear());
-            valueField.setText(model.getValue() == null ? "" : model.getValue().toPlainString());
+            if (model.getMonth() != null) {
+                monthCombo.setValue(model.getMonth());
+            }
+            if (model.getYear() != null) {
+                yearSpinner.getValueFactory().setValue(model.getYear());
+            }
+            valueField.setText(Formats.number(model.getValue()));
             clazzField.setText(model.getClazz());
             this.graphId = model.getGraphId();
         }
@@ -81,15 +91,15 @@ public class DataNumberFormController implements DialogAware {
         errorLabel.setVisible(false);
         BigDecimal value;
         try {
-            value = new BigDecimal(valueField.getText().trim());
-        } catch (NumberFormatException | NullPointerException ex) {
-            showError("Value must be a number (e.g. 1234.56).");
+            value = Formats.parseNumber(valueField.getText());
+        } catch (Exception ex) {
+            showError(Messages.get("datanumber.value.invalid"));
             return;
         }
         DataNumberDto dto = DataNumberDto.builder()
                 .id(model == null ? null : model.getId())
                 .graphId(graphId)
-                .month(monthSpinner.getValue())
+                .month(monthCombo.getValue())
                 .year(yearSpinner.getValue())
                 .value(value)
                 .clazz(emptyToNull(clazzField.getText()))

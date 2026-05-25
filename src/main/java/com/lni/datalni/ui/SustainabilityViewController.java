@@ -7,7 +7,9 @@ import com.lni.datalni.service.dto.SustainabilityDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.LinkOpener;
+import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.SdgCatalog;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -62,8 +64,7 @@ public class SustainabilityViewController {
         titleColumn.setCellValueFactory(Cells.of(SustainabilityDto::getTitle));
         authorColumn.setCellValueFactory(Cells.of(SustainabilityDto::getAuthor));
         odsColumn.setCellValueFactory(Cells.of(s -> SdgCatalog.label(s.getOds())));
-        publishedColumn.setCellValueFactory(Cells.of(
-                s -> s.getPublished() == null ? "" : s.getPublished().toString()));
+        publishedColumn.setCellValueFactory(Cells.of(s -> Formats.date(s.getPublished())));
 
         linkColumn.setCellValueFactory(Cells.of(s -> s));
         linkColumn.setCellFactory(col -> new LinkCell());
@@ -141,7 +142,8 @@ public class SustainabilityViewController {
         if (selected == null) {
             return;
         }
-        if (Dialogs.confirm("Delete publication", "Delete publication #" + selected.getId() + "?")) {
+        if (Dialogs.confirm(Messages.get("sustainability.delete.title"),
+                Messages.get("sustainability.delete.message", String.valueOf(selected.getId())))) {
             async.run(() -> {
                 sustainabilityService.delete(selected.getId());
                 return null;
