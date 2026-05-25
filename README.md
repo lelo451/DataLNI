@@ -63,6 +63,29 @@ mvn -Pit verify     # also enables the opt-in DB2 Testcontainers IT (needs Docke
 The `GraphRepositoryDb2IT` integration test is `@Disabled` by default (the IBM DB2 image
 is large/slow); remove the annotation to exercise the real DB2 insert path.
 
+## Native packaging (jpackage)
+
+```bash
+mvn -Pjpackage -DskipTests package        # -> target/dist/DATALNI (self-contained app image)
+```
+
+The `jpackage` profile lays the app jar + all dependencies (including the JavaFX
+**natives for the build OS**) flat in an input dir and runs `jpackage`, bundling a Java 21
+runtime — so the result needs **nothing pre-installed** on the user's machine.
+
+**Per-OS:** `jpackage` cannot cross-compile — run it **on each target OS** (the OS profiles
+auto-pick the right JavaFX natives). Choose the artifact type with `-Djpackage.type` (default
+`APP_IMAGE`, which needs no extra tooling):
+
+| OS | Command | Extra tooling |
+|----|---------|---------------|
+| Linux | `mvn -Pjpackage -DskipTests -Djpackage.type=DEB package` | `dpkg`, `fakeroot` (or `RPM` → `rpm-build`) |
+| Windows | `mvn -Pjpackage -DskipTests -Djpackage.type=MSI package` | WiX Toolset (also for `EXE`) |
+| macOS | `mvn -Pjpackage -DskipTests -Djpackage.type=DMG package` | Xcode CLT (also for `PKG`) |
+
+To produce installers for all three from one place, run this per-OS in a CI matrix
+(e.g. GitHub Actions `runs-on: [ubuntu, windows, macos]`).
+
 ## How the SPEC open questions were resolved
 
 | Q  | Topic                | Decision in this build |

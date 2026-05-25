@@ -27,7 +27,12 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
+        <jpackage-maven-plugin.version>1.7.4</jpackage-maven-plugin.version>
         <main.class>com.lni.datalni.Launcher</main.class>
+        <!-- JavaFX native classifier; overridden per-OS by the profiles below. -->
+        <javafx.platform>linux</javafx.platform>
+        <!-- jpackage requires a numeric version (no -SNAPSHOT). -->
+        <app.version>1.0.0</app.version>
     </properties>
 
     <dependencyManagement>
@@ -232,6 +237,146 @@
             <properties>
                 <skip.it.tests>false</skip.it.tests>
             </properties>
+        </profile>
+
+        <!-- Detect the JavaFX native classifier for the current OS/arch. -->
+        <profile>
+            <id>jfx-linux</id>
+            <activation><os><family>unix</family><name>Linux</name></os></activation>
+            <properties><javafx.platform>linux</javafx.platform></properties>
+        </profile>
+        <profile>
+            <id>jfx-windows</id>
+            <activation><os><family>windows</family></os></activation>
+            <properties><javafx.platform>win</javafx.platform></properties>
+        </profile>
+        <profile>
+            <id>jfx-mac-x64</id>
+            <activation><os><family>mac</family><arch>x86_64</arch></os></activation>
+            <properties><javafx.platform>mac</javafx.platform></properties>
+        </profile>
+        <profile>
+            <id>jfx-mac-aarch64</id>
+            <activation><os><family>mac</family><arch>aarch64</arch></os></activation>
+            <properties><javafx.platform>mac-aarch64</javafx.platform></properties>
+        </profile>
+
+        <!--
+          Native installer/app-image via jpackage:
+            mvn -Pjpackage -DskipTests package
+          Produces target/dist/. Default type is app-image (no extra OS tooling);
+          override with -Djpackage.type=DEB|RPM|MSI|EXE|PKG|DMG (needs the platform's
+          packaging tools). Skips the Spring Boot fat jar and instead lays the thin app
+          jar + all dependencies (incl. the JavaFX ${javafx.platform} natives) flat in
+          an input dir so jpackage puts them on the classpath; Launcher is the entry point.
+        -->
+        <profile>
+            <id>jpackage</id>
+            <properties>
+                <jpackage.type>APP_IMAGE</jpackage.type>
+                <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+                <jpackage.input>${project.build.directory}/jpackage/input</jpackage.input>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-runtime-deps</id>
+                                <phase>package</phase>
+                                <goals><goal>copy-dependencies</goal></goals>
+                                <configuration>
+                                    <includeScope>runtime</includeScope>
+                                    <outputDirectory>${jpackage.input}</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-javafx-natives</id>
+                                <phase>package</phase>
+                                <goals><goal>copy</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${jpackage.input}</outputDirectory>
+                                    <stripVersion>false</stripVersion>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.openjfx</groupId>
+                                            <artifactId>javafx-base</artifactId>
+                                            <version>${javafx.version}</version>
+                                            <classifier>${javafx.platform}</classifier>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.openjfx</groupId>
+                                            <artifactId>javafx-graphics</artifactId>
+                                            <version>${javafx.version}</version>
+                                            <classifier>${javafx.platform}</classifier>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.openjfx</groupId>
+                                            <artifactId>javafx-controls</artifactId>
+                                            <version>${javafx.version}</version>
+                                            <classifier>${javafx.platform}</classifier>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.openjfx</groupId>
+                                            <artifactId>javafx-fxml</artifactId>
+                                            <version>${javafx.version}</version>
+                                            <classifier>${javafx.platform}</classifier>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Place the thin app jar alongside the dependencies in the input dir. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-app-jar</id>
+                                <phase>package</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                              todir="${jpackage.input}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <version>${jpackage-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-image</id>
+                                <phase>package</phase>
+                                <goals><goal>jpackage</goal></goals>
+                                <configuration>
+                                    <type>${jpackage.type}</type>
+                                    <name>DATALNI</name>
+                                    <appVersion>${app.version}</appVersion>
+                                    <vendor>UEM - LNI</vendor>
+                                    <input>${jpackage.input}</input>
+                                    <destination>${project.build.directory}/dist</destination>
+                                    <mainJar>${project.build.finalName}.jar</mainJar>
+                                    <mainClass>${main.class}</mainClass>
+                                    <icon>src/packaging/icon.png</icon>
+                                    <javaOptions>
+                                        <option>-Dspring.profiles.active=prod</option>
+                                    </javaOptions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
