@@ -14,7 +14,7 @@
     <groupId>com.lni</groupId>
     <artifactId>datalni</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>DataLNI</name>
+    <name>DATA LNI</name>
     <description>Desktop CRUD application for PLD data on DB2 (Spring Boot + JavaFX)</description>
 
     <properties>
