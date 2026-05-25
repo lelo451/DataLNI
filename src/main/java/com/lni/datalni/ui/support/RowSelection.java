@@ -28,11 +28,16 @@ public final class RowSelection<T> {
 
     private RowSelection(TableView<T> table) {
         this.table = table;
+        // Required for the per-row CheckBoxTableCell checkboxes to be clickable (so the user
+        // can check individual rows, not only all/none via the header). The data columns have
+        // no editable cell factory, so they stay read-only.
+        table.setEditable(true);
 
         TableColumn<T, Boolean> column = new TableColumn<>();
         column.setSortable(false);
         column.setReorderable(false);
         column.setResizable(false);
+        column.setEditable(true);
         column.setMinWidth(40);
         column.setMaxWidth(40);
         column.setCellValueFactory(cd -> propertyFor(cd.getValue()));
