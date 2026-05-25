@@ -6,9 +6,12 @@ import com.lni.datalni.service.GraphService;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
+import com.lni.datalni.ui.imports.ImportField;
+import com.lni.datalni.ui.imports.ImportValues;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.Messages;
 import javafx.collections.FXCollections;
@@ -21,6 +24,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /** Graphs module: master {@link GraphDto} table with a detail {@link DataNumberDto} table. */
 @Component
@@ -41,6 +46,7 @@ public class GraphViewController {
     @FXML private Button newGraphButton;
     @FXML private Button editGraphButton;
     @FXML private Button deleteGraphButton;
+    @FXML private Button importGraphButton;
 
     @FXML private TableView<DataNumberDto> dataNumberTable;
     @FXML private TableColumn<DataNumberDto, String> dnMonthColumn;
@@ -50,6 +56,7 @@ public class GraphViewController {
     @FXML private Button newDataNumberButton;
     @FXML private Button editDataNumberButton;
     @FXML private Button deleteDataNumberButton;
+    @FXML private Button importDataNumberButton;
 
     public GraphViewController(GraphService graphService, DataNumberService dataNumberService,
                                CurrentUser currentUser, StageManager stageManager, AsyncRunner async) {
@@ -79,9 +86,11 @@ public class GraphViewController {
         newGraphButton.setVisible(canEdit);
         editGraphButton.setVisible(canEdit);
         deleteGraphButton.setVisible(canEdit);
+        importGraphButton.setVisible(canEdit);
         newDataNumberButton.setVisible(canEdit);
         editDataNumberButton.setVisible(canEdit);
         deleteDataNumberButton.setVisible(canEdit);
+        importDataNumberButton.setVisible(canEdit);
 
         graphTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, old, selected) -> loadDataNumbers(selected));
@@ -156,6 +165,26 @@ public class GraphViewController {
         }
     }
 
+    @FXML
+    private void onImportGraphs() {
+        stageManager.openImport(Messages.get("import.graphs.title"), List.of(
+                ImportField.required("title", Messages.get("field.title")),
+                ImportField.optional("description", Messages.get("field.description"))),
+                this::importGraphRow, this::loadGraphs);
+    }
+
+    private Optional<String> importGraphRow(Map<String, String> values) {
+        try {
+            graphService.create(GraphDto.builder()
+                    .title(ImportValues.text(values.get("title")))
+                    .description(ImportValues.text(values.get("description")))
+                    .build());
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(ErrorTranslator.toMessage(e));
+        }
+    }
+
     // ---- DataNumber CRUD ----
 
     @FXML
@@ -204,6 +233,33 @@ public class GraphViewController {
                 dataNumberService.delete(selected.getId());
                 return null;
             }, ok -> loadDataNumbers(graph));
+        }
+    }
+
+    @FXML
+    private void onImportDataNumbers() {
+        GraphDto graph = graphTable.getSelectionModel().getSelectedItem();
+        stageManager.openImport(Messages.get("import.datanumbers.title"), List.of(
+                ImportField.required("graphId", Messages.get("field.graph")),
+                ImportField.required("year", Messages.get("field.year")),
+                ImportField.required("value", Messages.get("field.value")),
+                ImportField.optional("month", Messages.get("field.month")),
+                ImportField.optional("clazz", Messages.get("field.clazz"))),
+                this::importDataNumberRow, () -> loadDataNumbers(graph));
+    }
+
+    private Optional<String> importDataNumberRow(Map<String, String> values) {
+        try {
+            dataNumberService.create(DataNumberDto.builder()
+                    .graphId(ImportValues.integer(values.get("graphId")))
+                    .year(ImportValues.integer(values.get("year")))
+                    .value(ImportValues.decimal(values.get("value")))
+                    .month(ImportValues.integer(values.get("month")))
+                    .clazz(ImportValues.text(values.get("clazz")))
+                    .build());
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(ErrorTranslator.toMessage(e));
         }
     }
 }

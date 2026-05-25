@@ -26,6 +26,9 @@
             <graphic><FontIcon iconLiteral="fas-sync"/></graphic>
         </Button>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="importGraphButton" text="Importar" onAction="#onImportGraphs">
+            <graphic><FontIcon iconLiteral="fas-file-import"/></graphic>
+        </Button>
         <Button fx:id="newGraphButton" text="Novo" onAction="#onNewGraph">
             <graphic><FontIcon iconLiteral="fas-plus"/></graphic>
         </Button>
@@ -48,6 +51,9 @@
     <HBox spacing="8.0" alignment="CENTER_LEFT">
         <Label text="Números (UEM) do gráfico selecionado" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="importDataNumberButton" text="Importar" onAction="#onImportDataNumbers">
+            <graphic><FontIcon iconLiteral="fas-file-import"/></graphic>
+        </Button>
         <Button fx:id="newDataNumberButton" text="Novo número" onAction="#onNewDataNumber">
             <graphic><FontIcon iconLiteral="fas-plus"/></graphic>
         </Button>

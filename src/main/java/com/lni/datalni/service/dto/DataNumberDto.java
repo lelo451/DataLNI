@@ -20,7 +20,7 @@ public class DataNumberDto {
 
     private Integer id;
 
-    @NotNull(message = "{datanumber.month.required}")
+    // Optional: some data sets are annual (no month). The form always supplies one.
     @Range(min = 1, max = 12, message = "{datanumber.month.range}")
     private Integer month;
 

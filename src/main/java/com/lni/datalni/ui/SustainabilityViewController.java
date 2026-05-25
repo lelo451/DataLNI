@@ -4,9 +4,12 @@ import com.lni.datalni.security.CurrentUser;
 import com.lni.datalni.service.SustainabilityService;
 import com.lni.datalni.service.dto.SustainabilityCriteria;
 import com.lni.datalni.service.dto.SustainabilityDto;
+import com.lni.datalni.ui.imports.ImportField;
+import com.lni.datalni.ui.imports.ImportValues;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.LinkOpener;
 import com.lni.datalni.ui.support.Messages;
@@ -23,6 +26,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /** Sustainability module: searchable table, ODS label, clickable link, date column. */
 @Component
@@ -47,6 +52,7 @@ public class SustainabilityViewController {
     @FXML private Button newButton;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
+    @FXML private Button importButton;
 
     public SustainabilityViewController(SustainabilityService sustainabilityService,
                                         CurrentUser currentUser, StageManager stageManager,
@@ -76,6 +82,7 @@ public class SustainabilityViewController {
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);
         deleteButton.setVisible(canEdit);
+        importButton.setVisible(canEdit);
 
         load();
     }
@@ -134,6 +141,34 @@ public class SustainabilityViewController {
                     form.setModel(selected);
                     form.setOnSaved(this::load);
                 });
+    }
+
+    @FXML
+    private void onImport() {
+        stageManager.openImport(Messages.get("import.sustainability.title"), List.of(
+                ImportField.required("year", Messages.get("field.year")),
+                ImportField.required("title", Messages.get("field.title")),
+                ImportField.optional("ods", Messages.get("field.ods")),
+                ImportField.optional("author", Messages.get("field.author")),
+                ImportField.optional("link", Messages.get("field.link")),
+                ImportField.optional("published", Messages.get("field.published"))),
+                this::importRow, this::load);
+    }
+
+    private Optional<String> importRow(Map<String, String> values) {
+        try {
+            sustainabilityService.create(SustainabilityDto.builder()
+                    .year(ImportValues.integer(values.get("year")))
+                    .ods(ImportValues.integer(values.get("ods")))
+                    .title(ImportValues.text(values.get("title")))
+                    .author(ImportValues.text(values.get("author")))
+                    .link(ImportValues.text(values.get("link")))
+                    .published(ImportValues.date(values.get("published")))
+                    .build());
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(ErrorTranslator.toMessage(e));
+        }
     }
 
     @FXML

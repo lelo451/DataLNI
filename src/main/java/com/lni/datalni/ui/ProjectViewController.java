@@ -4,9 +4,12 @@ import com.lni.datalni.security.CurrentUser;
 import com.lni.datalni.service.ProjectService;
 import com.lni.datalni.service.dto.ProjectCriteria;
 import com.lni.datalni.service.dto.ProjectDto;
+import com.lni.datalni.ui.imports.ImportField;
+import com.lni.datalni.ui.imports.ImportValues;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.SdgCatalog;
 import javafx.collections.FXCollections;
@@ -19,6 +22,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /** Projects module: searchable table with CRUD; ODS shown as a label. */
 @Component
@@ -40,6 +45,7 @@ public class ProjectViewController {
     @FXML private Button newButton;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
+    @FXML private Button importButton;
 
     public ProjectViewController(ProjectService projectService, CurrentUser currentUser,
                                  StageManager stageManager, AsyncRunner async) {
@@ -64,6 +70,7 @@ public class ProjectViewController {
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);
         deleteButton.setVisible(canEdit);
+        importButton.setVisible(canEdit);
 
         load();
     }
@@ -106,6 +113,30 @@ public class ProjectViewController {
             form.setModel(selected);
             form.setOnSaved(this::load);
         });
+    }
+
+    @FXML
+    private void onImport() {
+        stageManager.openImport(Messages.get("import.projects.title"), List.of(
+                ImportField.required("title", Messages.get("field.title")),
+                ImportField.optional("ods", Messages.get("field.ods")),
+                ImportField.optional("eprotocol", Messages.get("field.eprotocol")),
+                ImportField.optional("coordinator", Messages.get("field.coordinator"))),
+                this::importRow, this::load);
+    }
+
+    private Optional<String> importRow(Map<String, String> values) {
+        try {
+            projectService.create(ProjectDto.builder()
+                    .title(ImportValues.text(values.get("title")))
+                    .ods(ImportValues.integer(values.get("ods")))
+                    .eprotocol(ImportValues.text(values.get("eprotocol")))
+                    .coordinator(ImportValues.text(values.get("coordinator")))
+                    .build());
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(ErrorTranslator.toMessage(e));
+        }
     }
 
     @FXML
