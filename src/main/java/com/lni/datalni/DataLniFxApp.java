@@ -44,5 +44,8 @@ public class DataLniFxApp extends Application {
             springContext.close();
         }
         Platform.exit();
+        // Guarantee the JVM terminates even if a dependency (e.g. the JDBC driver) left a
+        // lingering non-daemon thread; this is a desktop app, so a hard exit is correct.
+        System.exit(0);
     }
 }

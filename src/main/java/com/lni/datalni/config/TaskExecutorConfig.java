@@ -17,14 +17,24 @@ public class TaskExecutorConfig {
 
     public static final String FX_EXECUTOR = "fxTaskExecutor";
 
-    @Bean(name = FX_EXECUTOR)
-    public Executor fxTaskExecutor() {
+    /**
+     * The underlying pool, exposed as a managed bean so Spring shuts it down on context
+     * close. Threads are daemons so they never keep the JVM alive after the window closes.
+     */
+    @Bean
+    public ThreadPoolTaskExecutor fxThreadPool() {
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
         pool.setCorePoolSize(2);
         pool.setMaxPoolSize(4);
         pool.setQueueCapacity(50);
         pool.setThreadNamePrefix("fx-task-");
+        pool.setDaemon(true);
         pool.initialize();
-        return new DelegatingSecurityContextExecutor(pool.getThreadPoolExecutor());
+        return pool;
+    }
+
+    @Bean(name = FX_EXECUTOR)
+    public Executor fxTaskExecutor(ThreadPoolTaskExecutor fxThreadPool) {
+        return new DelegatingSecurityContextExecutor(fxThreadPool);
     }
 }
