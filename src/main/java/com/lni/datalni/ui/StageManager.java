@@ -73,6 +73,13 @@ public class StageManager {
             aware.setDialogStage(dialog);
         }
         configurer.accept(view.controller());
+
+        // Size the window to its content rather than a fixed size, and keep it fitted as
+        // the content's preferred size changes (e.g. when a validation message appears).
+        dialog.setResizable(false);
+        dialog.sizeToScene();
+        view.root().layoutBoundsProperty().addListener((obs, old, bounds) -> dialog.sizeToScene());
+
         dialog.showAndWait();
     }
 
