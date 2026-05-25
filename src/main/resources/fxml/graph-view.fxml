@@ -49,6 +49,15 @@
         </columns>
     </TableView>
 
+    <HBox spacing="6.0" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="graphPageInfo" styleClass="status-value"/>
+        <Button fx:id="graphFirstPageButton" text="|&lt;" onAction="#onGraphFirstPage"/>
+        <Button fx:id="graphPrevPageButton" text="&lt;" onAction="#onGraphPrevPage"/>
+        <Button fx:id="graphNextPageButton" text="&gt;" onAction="#onGraphNextPage"/>
+        <Button fx:id="graphLastPageButton" text="&gt;|" onAction="#onGraphLastPage"/>
+    </HBox>
+
     <HBox spacing="8.0" alignment="CENTER_LEFT">
         <Label fx:id="dataNumberHeader" text="Números (UEM) do gráfico selecionado" styleClass="section-title"/>
         <Label fx:id="dataNumberCountLabel" styleClass="status-value"/>
@@ -75,6 +84,15 @@
             <TableColumn fx:id="dnClazzColumn" text="Classe" prefWidth="260.0"/>
         </columns>
     </TableView>
+
+    <HBox spacing="6.0" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="dnPageInfo" styleClass="status-value"/>
+        <Button fx:id="dnFirstPageButton" text="|&lt;" onAction="#onDnFirstPage"/>
+        <Button fx:id="dnPrevPageButton" text="&lt;" onAction="#onDnPrevPage"/>
+        <Button fx:id="dnNextPageButton" text="&gt;" onAction="#onDnNextPage"/>
+        <Button fx:id="dnLastPageButton" text="&gt;|" onAction="#onDnLastPage"/>
+    </HBox>
 
     <padding>
         <Insets top="4.0" right="4.0" bottom="4.0" left="4.0"/>

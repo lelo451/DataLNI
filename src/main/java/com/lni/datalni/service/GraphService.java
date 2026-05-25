@@ -12,6 +12,8 @@ import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
 import com.lni.datalni.service.mapper.GraphMapper;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,11 @@ public class GraphService {
 
     public List<GraphDto> search(GraphCriteria criteria) {
         return graphMapper.toDtoList(graphRepository.findAll(GraphSpecifications.matches(criteria)));
+    }
+
+    public Page<GraphDto> search(GraphCriteria criteria, Pageable pageable) {
+        return graphRepository.findAll(GraphSpecifications.matches(criteria), pageable)
+                .map(graphMapper::toDto);
     }
 
     public GraphDto get(Integer id) {

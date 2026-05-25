@@ -7,6 +7,8 @@ import com.lni.datalni.security.SecurityRoles;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,10 @@ public class DataNumberService {
 
     public List<DataNumberDto> listByGraph(Integer graphId) {
         return mapper.toDtoList(repository.findByGraphIdOrderByYearDescMonthDesc(graphId));
+    }
+
+    public Page<DataNumberDto> listByGraph(Integer graphId, Pageable pageable) {
+        return repository.findByGraphId(graphId, pageable).map(mapper::toDto);
     }
 
     public List<DataNumberDto> listByGraphAndYear(Integer graphId, Integer year) {

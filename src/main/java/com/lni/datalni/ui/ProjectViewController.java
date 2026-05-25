@@ -11,6 +11,7 @@ import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.Pagers;
 import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.SdgCatalog;
 import com.lni.datalni.ui.support.StatusService;
@@ -23,6 +24,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -52,8 +55,17 @@ public class ProjectViewController {
     @FXML private Button editButton;
     @FXML private Button deleteButton;
     @FXML private Button importButton;
+    @FXML private Label pageInfo;
+    @FXML private Button firstPageButton;
+    @FXML private Button prevPageButton;
+    @FXML private Button nextPageButton;
+    @FXML private Button lastPageButton;
 
+    private static final int PAGE_SIZE = 50;
     private RowSelection<ProjectDto> selection;
+    private ProjectCriteria criteria = ProjectCriteria.empty();
+    private int page = 0;
+    private int totalPages = 0;
 
     public ProjectViewController(ProjectService projectService, CurrentUser currentUser,
                                  StageManager stageManager, AsyncRunner async, StatusService status) {
@@ -104,23 +116,64 @@ public class ProjectViewController {
 
     @FXML
     private void onSearch() {
-        async.run(() -> projectService.search(new ProjectCriteria(searchField.getText(), null)),
-                this::populate);
+        criteria = new ProjectCriteria(searchField.getText(), null);
+        page = 0;
+        load();
     }
 
     @FXML
     private void onRefresh() {
         searchField.clear();
+        criteria = ProjectCriteria.empty();
+        page = 0;
         load();
     }
 
     private void load() {
-        async.run(projectService::list, this::populate);
+        async.run(() -> projectService.search(criteria, PageRequest.of(page, PAGE_SIZE)),
+                this::populate);
     }
 
-    private void populate(List<ProjectDto> rows) {
-        table.setItems(FXCollections.observableArrayList(rows));
-        countLabel.setText(Messages.get("table.count", String.valueOf(rows.size())));
+    private void populate(Page<ProjectDto> result) {
+        totalPages = result.getTotalPages();
+        // After deletes the current page may no longer exist; step back and reload.
+        if (page > 0 && page >= totalPages) {
+            page = Math.max(0, totalPages - 1);
+            load();
+            return;
+        }
+        table.setItems(FXCollections.observableArrayList(result.getContent()));
+        countLabel.setText(Messages.get("table.count", String.valueOf(result.getTotalElements())));
+        Pagers.update(firstPageButton, prevPageButton, nextPageButton, lastPageButton,
+                pageInfo, page, totalPages);
+    }
+
+    @FXML
+    private void onFirstPage() {
+        goTo(0);
+    }
+
+    @FXML
+    private void onPrevPage() {
+        goTo(page - 1);
+    }
+
+    @FXML
+    private void onNextPage() {
+        goTo(page + 1);
+    }
+
+    @FXML
+    private void onLastPage() {
+        goTo(totalPages - 1);
+    }
+
+    private void goTo(int target) {
+        int clamped = Math.max(0, Math.min(target, totalPages - 1));
+        if (clamped != page) {
+            page = clamped;
+            load();
+        }
     }
 
     @FXML

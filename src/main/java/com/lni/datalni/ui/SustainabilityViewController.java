@@ -13,6 +13,7 @@ import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.LinkOpener;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.Pagers;
 import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.SdgCatalog;
 import com.lni.datalni.ui.support.StatusService;
@@ -27,6 +28,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -59,8 +62,17 @@ public class SustainabilityViewController {
     @FXML private Button editButton;
     @FXML private Button deleteButton;
     @FXML private Button importButton;
+    @FXML private Label pageInfo;
+    @FXML private Button firstPageButton;
+    @FXML private Button prevPageButton;
+    @FXML private Button nextPageButton;
+    @FXML private Button lastPageButton;
 
+    private static final int PAGE_SIZE = 50;
     private RowSelection<SustainabilityDto> selection;
+    private SustainabilityCriteria criteria = SustainabilityCriteria.empty();
+    private int page = 0;
+    private int totalPages = 0;
 
     public SustainabilityViewController(SustainabilityService sustainabilityService,
                                         CurrentUser currentUser, StageManager stageManager,
@@ -118,25 +130,64 @@ public class SustainabilityViewController {
     @FXML
     private void onSearch() {
         Integer year = parseYear(yearField.getText());
-        async.run(() -> sustainabilityService.search(
-                        new SustainabilityCriteria(searchField.getText(), year, null)),
-                this::populate);
+        criteria = new SustainabilityCriteria(searchField.getText(), year, null);
+        page = 0;
+        load();
     }
 
     @FXML
     private void onRefresh() {
         searchField.clear();
         yearField.clear();
+        criteria = SustainabilityCriteria.empty();
+        page = 0;
         load();
     }
 
     private void load() {
-        async.run(sustainabilityService::list, this::populate);
+        async.run(() -> sustainabilityService.search(criteria, PageRequest.of(page, PAGE_SIZE)),
+                this::populate);
     }
 
-    private void populate(List<SustainabilityDto> rows) {
-        table.setItems(FXCollections.observableArrayList(rows));
-        countLabel.setText(Messages.get("table.count", String.valueOf(rows.size())));
+    private void populate(Page<SustainabilityDto> result) {
+        totalPages = result.getTotalPages();
+        if (page > 0 && page >= totalPages) {
+            page = Math.max(0, totalPages - 1);
+            load();
+            return;
+        }
+        table.setItems(FXCollections.observableArrayList(result.getContent()));
+        countLabel.setText(Messages.get("table.count", String.valueOf(result.getTotalElements())));
+        Pagers.update(firstPageButton, prevPageButton, nextPageButton, lastPageButton,
+                pageInfo, page, totalPages);
+    }
+
+    @FXML
+    private void onFirstPage() {
+        goTo(0);
+    }
+
+    @FXML
+    private void onPrevPage() {
+        goTo(page - 1);
+    }
+
+    @FXML
+    private void onNextPage() {
+        goTo(page + 1);
+    }
+
+    @FXML
+    private void onLastPage() {
+        goTo(totalPages - 1);
+    }
+
+    private void goTo(int target) {
+        int clamped = Math.max(0, Math.min(target, totalPages - 1));
+        if (clamped != page) {
+            page = clamped;
+            load();
+        }
     }
 
     private static Integer parseYear(String text) {

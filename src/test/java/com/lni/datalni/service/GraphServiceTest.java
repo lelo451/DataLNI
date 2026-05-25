@@ -4,6 +4,7 @@ import com.lni.datalni.domain.Graph;
 import com.lni.datalni.exception.NotFoundException;
 import com.lni.datalni.repository.DataNumberRepository;
 import com.lni.datalni.repository.GraphRepository;
+import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
 import com.lni.datalni.service.mapper.GraphMapper;
@@ -13,7 +14,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +63,22 @@ class GraphServiceTest {
         assertThatThrownBy(() -> service.get(42))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("42");
+    }
+
+    @Test
+    void pagedSearch_mapsEntitiesToDtosPreservingPaging() {
+        Graph entity = new Graph();
+        entity.setId(1);
+        GraphDto dto = GraphDto.builder().id(1).title("T").build();
+        Pageable pageable = PageRequest.of(0, 50);
+        Page<Graph> page = new PageImpl<>(List.of(entity), pageable, 1);
+        when(graphRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(graphMapper.toDto(entity)).thenReturn(dto);
+
+        Page<GraphDto> result = service.search(GraphCriteria.empty(), pageable);
+
+        assertThat(result.getContent()).containsExactly(dto);
+        assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
     @Test

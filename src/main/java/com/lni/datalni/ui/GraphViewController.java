@@ -14,6 +14,7 @@ import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.Messages;
+import com.lni.datalni.ui.support.Pagers;
 import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.StatusService;
 import com.lni.datalni.ui.support.Tables;
@@ -25,6 +26,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -53,6 +57,11 @@ public class GraphViewController {
     @FXML private Button editGraphButton;
     @FXML private Button deleteGraphButton;
     @FXML private Button importGraphButton;
+    @FXML private Label graphPageInfo;
+    @FXML private Button graphFirstPageButton;
+    @FXML private Button graphPrevPageButton;
+    @FXML private Button graphNextPageButton;
+    @FXML private Button graphLastPageButton;
 
     @FXML private Label dataNumberHeader;
     @FXML private Label dataNumberCountLabel;
@@ -65,9 +74,20 @@ public class GraphViewController {
     @FXML private Button editDataNumberButton;
     @FXML private Button deleteDataNumberButton;
     @FXML private Button importDataNumberButton;
+    @FXML private Label dnPageInfo;
+    @FXML private Button dnFirstPageButton;
+    @FXML private Button dnPrevPageButton;
+    @FXML private Button dnNextPageButton;
+    @FXML private Button dnLastPageButton;
 
+    private static final int PAGE_SIZE = 50;
     private RowSelection<GraphDto> graphSelection;
     private RowSelection<DataNumberDto> dataNumberSelection;
+    private GraphCriteria graphCriteria = GraphCriteria.empty();
+    private int graphPage = 0;
+    private int graphTotalPages = 0;
+    private int dnPage = 0;
+    private int dnTotalPages = 0;
 
     public GraphViewController(GraphService graphService, DataNumberService dataNumberService,
                                CurrentUser currentUser, StageManager stageManager, AsyncRunner async,
@@ -115,6 +135,7 @@ public class GraphViewController {
         }
 
         graphTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
+            dnPage = 0;
             loadDataNumbers(selected);
             updateDataNumberHeader(selected);
             updateDataNumberButtons();
@@ -127,6 +148,8 @@ public class GraphViewController {
         updateGraphButtons();
         updateDataNumberHeader(null);
         updateDataNumberButtons();
+        Pagers.update(dnFirstPageButton, dnPrevPageButton, dnNextPageButton, dnLastPageButton,
+                dnPageInfo, 0, 0);
 
         loadGraphs();
     }
@@ -157,38 +180,125 @@ public class GraphViewController {
 
     @FXML
     private void onSearch() {
-        async.run(() -> graphService.search(new GraphCriteria(searchField.getText())),
-                this::populateGraphs);
+        graphCriteria = new GraphCriteria(searchField.getText());
+        graphPage = 0;
+        loadGraphs();
     }
 
     @FXML
     private void onRefresh() {
         searchField.clear();
+        graphCriteria = GraphCriteria.empty();
+        graphPage = 0;
         loadGraphs();
     }
 
     private void loadGraphs() {
-        async.run(graphService::list, this::populateGraphs);
+        async.run(() -> graphService.search(graphCriteria, PageRequest.of(graphPage, PAGE_SIZE)),
+                this::populateGraphs);
     }
 
-    private void populateGraphs(List<GraphDto> graphs) {
-        graphTable.setItems(FXCollections.observableArrayList(graphs));
-        graphCountLabel.setText(Messages.get("table.count", String.valueOf(graphs.size())));
+    private void populateGraphs(Page<GraphDto> result) {
+        graphTotalPages = result.getTotalPages();
+        if (graphPage > 0 && graphPage >= graphTotalPages) {
+            graphPage = Math.max(0, graphTotalPages - 1);
+            loadGraphs();
+            return;
+        }
+        graphTable.setItems(FXCollections.observableArrayList(result.getContent()));
+        graphCountLabel.setText(Messages.get("table.count", String.valueOf(result.getTotalElements())));
+        Pagers.update(graphFirstPageButton, graphPrevPageButton, graphNextPageButton,
+                graphLastPageButton, graphPageInfo, graphPage, graphTotalPages);
+        // A fresh graph page clears the detail until the user picks a graph again.
         dataNumberTable.setItems(FXCollections.observableArrayList());
         dataNumberCountLabel.setText("");
+        dnPage = 0;
+        dnTotalPages = 0;
+        Pagers.update(dnFirstPageButton, dnPrevPageButton, dnNextPageButton, dnLastPageButton,
+                dnPageInfo, 0, 0);
+    }
+
+    @FXML
+    private void onGraphFirstPage() {
+        goToGraphPage(0);
+    }
+
+    @FXML
+    private void onGraphPrevPage() {
+        goToGraphPage(graphPage - 1);
+    }
+
+    @FXML
+    private void onGraphNextPage() {
+        goToGraphPage(graphPage + 1);
+    }
+
+    @FXML
+    private void onGraphLastPage() {
+        goToGraphPage(graphTotalPages - 1);
+    }
+
+    private void goToGraphPage(int target) {
+        int clamped = Math.max(0, Math.min(target, graphTotalPages - 1));
+        if (clamped != graphPage) {
+            graphPage = clamped;
+            loadGraphs();
+        }
     }
 
     private void loadDataNumbers(GraphDto graph) {
         if (graph == null) {
             dataNumberTable.setItems(FXCollections.observableArrayList());
             dataNumberCountLabel.setText("");
+            dnTotalPages = 0;
+            Pagers.update(dnFirstPageButton, dnPrevPageButton, dnNextPageButton, dnLastPageButton,
+                    dnPageInfo, 0, 0);
             return;
         }
-        async.run(() -> dataNumberService.listByGraph(graph.getId()),
-                rows -> {
-                    dataNumberTable.setItems(FXCollections.observableArrayList(rows));
-                    dataNumberCountLabel.setText(Messages.get("table.count", String.valueOf(rows.size())));
-                });
+        async.run(() -> dataNumberService.listByGraph(graph.getId(),
+                        PageRequest.of(dnPage, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "year", "month"))),
+                this::populateDataNumbers);
+    }
+
+    private void populateDataNumbers(Page<DataNumberDto> result) {
+        dnTotalPages = result.getTotalPages();
+        if (dnPage > 0 && dnPage >= dnTotalPages) {
+            dnPage = Math.max(0, dnTotalPages - 1);
+            loadDataNumbers(graphTable.getSelectionModel().getSelectedItem());
+            return;
+        }
+        dataNumberTable.setItems(FXCollections.observableArrayList(result.getContent()));
+        dataNumberCountLabel.setText(Messages.get("table.count", String.valueOf(result.getTotalElements())));
+        Pagers.update(dnFirstPageButton, dnPrevPageButton, dnNextPageButton, dnLastPageButton,
+                dnPageInfo, dnPage, dnTotalPages);
+    }
+
+    @FXML
+    private void onDnFirstPage() {
+        goToDnPage(0);
+    }
+
+    @FXML
+    private void onDnPrevPage() {
+        goToDnPage(dnPage - 1);
+    }
+
+    @FXML
+    private void onDnNextPage() {
+        goToDnPage(dnPage + 1);
+    }
+
+    @FXML
+    private void onDnLastPage() {
+        goToDnPage(dnTotalPages - 1);
+    }
+
+    private void goToDnPage(int target) {
+        int clamped = Math.max(0, Math.min(target, dnTotalPages - 1));
+        if (clamped != dnPage) {
+            dnPage = clamped;
+            loadDataNumbers(graphTable.getSelectionModel().getSelectedItem());
+        }
     }
 
     // ---- Graph CRUD ----

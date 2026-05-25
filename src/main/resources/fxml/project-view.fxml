@@ -54,4 +54,13 @@
             <TableColumn fx:id="odsColumn" text="ODS" prefWidth="260.0"/>
         </columns>
     </TableView>
+
+    <HBox spacing="6.0" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="pageInfo" styleClass="status-value"/>
+        <Button fx:id="firstPageButton" text="|&lt;" onAction="#onFirstPage"/>
+        <Button fx:id="prevPageButton" text="&lt;" onAction="#onPrevPage"/>
+        <Button fx:id="nextPageButton" text="&gt;" onAction="#onNextPage"/>
+        <Button fx:id="lastPageButton" text="&gt;|" onAction="#onLastPage"/>
+    </HBox>
 </VBox>
