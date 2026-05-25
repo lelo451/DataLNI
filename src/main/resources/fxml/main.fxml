@@ -60,7 +60,7 @@
             <Label text="Perfil:"/>
             <Label fx:id="roleLabel" styleClass="status-value"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="DataLNI"/>
+            <Label text="DATA LNI"/>
         </HBox>
     </bottom>
 </BorderPane>

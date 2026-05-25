@@ -3,12 +3,14 @@ package com.lni.datalni.ui;
 import com.lni.datalni.security.AuthenticationService;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.SvgIcons;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,7 @@ public class LoginController {
     private final StageManager stageManager;
     private final AsyncRunner async;
 
+    @FXML private ImageView logo;
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Button loginButton;
@@ -36,6 +39,7 @@ public class LoginController {
     @FXML
     private void initialize() {
         errorLabel.setVisible(false);
+        logo.setImage(SvgIcons.render("/images/app-icon.svg", 256));
         passwordField.setOnAction(e -> onLogin());
     }
 
