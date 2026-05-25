@@ -7,6 +7,7 @@ import com.lni.datalni.service.dto.ProjectDto;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.SdgCatalog;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -113,7 +114,8 @@ public class ProjectViewController {
         if (selected == null) {
             return;
         }
-        if (Dialogs.confirm("Delete project", "Delete project #" + selected.getId() + "?")) {
+        if (Dialogs.confirm(Messages.get("project.delete.title"),
+                Messages.get("project.delete.message", String.valueOf(selected.getId())))) {
             async.run(() -> {
                 projectService.delete(selected.getId());
                 return null;

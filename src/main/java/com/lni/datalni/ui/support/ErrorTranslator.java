@@ -22,10 +22,10 @@ public final class ErrorTranslator {
         Throwable cause = unwrap(error);
 
         if (cause instanceof AccessDeniedException) {
-            return "You do not have permission to perform this action.";
+            return Messages.get("error.permission");
         }
         if (cause instanceof AuthenticationException) {
-            return "Authentication failed. Check your username and password.";
+            return Messages.get("error.authentication");
         }
         if (cause instanceof ConstraintViolationException cve) {
             return cve.getConstraintViolations().stream()
@@ -36,15 +36,16 @@ public final class ErrorTranslator {
             return cause.getMessage();
         }
         if (cause instanceof DataAccessException) {
-            return "A database error occurred. Please try again or contact support.";
+            return Messages.get("error.database");
         }
         String message = cause.getMessage();
         return (message == null || message.isBlank())
-                ? "An unexpected error occurred." : message;
+                ? Messages.get("error.unexpected") : message;
     }
 
     private static String formatViolation(ConstraintViolation<?> violation) {
-        return "• " + violation.getPropertyPath() + ": " + violation.getMessage();
+        // The messages are self-describing (they name the field), so just bullet them.
+        return "• " + violation.getMessage();
     }
 
     private static Throwable unwrap(Throwable error) {

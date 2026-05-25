@@ -3,6 +3,7 @@ package com.lni.datalni.ui;
 import com.lni.datalni.security.AuthenticationService;
 import com.lni.datalni.ui.support.AsyncRunner;
 import com.lni.datalni.ui.support.ErrorTranslator;
+import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.SvgIcons;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -49,7 +50,7 @@ public class LoginController {
         char[] password = passwordField.getText() == null
                 ? new char[0] : passwordField.getText().toCharArray();
         if (username.isEmpty() || password.length == 0) {
-            showError("Enter username and password.");
+            showError(Messages.get("login.credentialsRequired"));
             return;
         }
         setBusy(true);

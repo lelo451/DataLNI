@@ -25,7 +25,7 @@ public class AsyncRunner {
 
     /** Runs {@code work}, calling {@code onSuccess} on the FX thread; errors show a dialog. */
     public <T> void run(Callable<T> work, Consumer<T> onSuccess) {
-        run(work, onSuccess, error -> Dialogs.error("Operation failed", error));
+        run(work, onSuccess, error -> Dialogs.error(Messages.get("error.operationFailed"), error));
     }
 
     public <T> void run(Callable<T> work, Consumer<T> onSuccess, Consumer<Throwable> onError) {

@@ -16,10 +16,10 @@ public class GraphDto {
 
     private Integer id;
 
-    @NotBlank
-    @Size(max = 150)
+    @NotBlank(message = "{graph.title.required}")
+    @Size(max = 150, message = "{graph.title.size}")
     private String title;
 
-    @Size(max = 150)
+    @Size(max = 150, message = "{graph.description.size}")
     private String description;
 }
