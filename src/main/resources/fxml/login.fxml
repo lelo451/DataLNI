@@ -35,5 +35,6 @@
         <graphic><FontIcon iconLiteral="fas-sign-in-alt"/></graphic>
     </Button>
 
-    <Label text="Dev: admin/admin · editor/editor · viewer/viewer" styleClass="login-hint"/>
+    <Label fx:id="devHint" text="Dev: admin/admin · editor/editor · viewer/viewer"
+           styleClass="login-hint"/>
 </VBox>
