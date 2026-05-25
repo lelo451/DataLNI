@@ -15,7 +15,7 @@
         <Insets top="36.0" right="40.0" bottom="36.0" left="40.0"/>
     </padding>
 
-    <Label text="DataLNI" styleClass="login-title"/>
+    <Label text="DATA LNI" styleClass="login-title"/>
     <Label text="Gestão de dados PLD" styleClass="login-subtitle"/>
 
     <VBox spacing="6.0">

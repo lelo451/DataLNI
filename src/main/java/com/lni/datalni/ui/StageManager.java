@@ -1,10 +1,12 @@
 package com.lni.datalni.ui;
 
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -17,8 +19,10 @@ import java.util.function.Consumer;
 public class StageManager {
 
     private static final String APP_CSS = "/css/app.css";
+    private static final String APP_ICON = "/images/app-icon.png";
 
     private final SpringFxmlLoader fxmlLoader;
+    private final Image appIcon = loadIcon();
     private Stage primaryStage;
 
     public StageManager(SpringFxmlLoader fxmlLoader) {
@@ -28,6 +32,7 @@ public class StageManager {
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("DataLNI");
+        applyIcon(primaryStage);
     }
 
     public Stage getPrimaryStage() {
@@ -66,6 +71,7 @@ public class StageManager {
         dialog.initOwner(primaryStage);
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle(title);
+        applyIcon(dialog);
         Scene scene = new Scene(view.root());
         applyCss(scene);
         dialog.setScene(scene);
@@ -81,6 +87,20 @@ public class StageManager {
         view.root().layoutBoundsProperty().addListener((obs, old, bounds) -> dialog.sizeToScene());
 
         dialog.showAndWait();
+    }
+
+    private void applyIcon(Stage stage) {
+        if (appIcon != null) {
+            stage.getIcons().add(appIcon);
+        }
+    }
+
+    private Image loadIcon() {
+        try (InputStream in = getClass().getResourceAsStream(APP_ICON)) {
+            return in == null ? null : new Image(in);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void applyCss(Scene scene) {
