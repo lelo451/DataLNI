@@ -18,9 +18,12 @@ import java.util.function.Consumer;
 public class AsyncRunner {
 
     private final Executor executor;
+    private final StatusService status;
 
-    public AsyncRunner(@Qualifier(TaskExecutorConfig.FX_EXECUTOR) Executor executor) {
+    public AsyncRunner(@Qualifier(TaskExecutorConfig.FX_EXECUTOR) Executor executor,
+                       StatusService status) {
         this.executor = executor;
+        this.status = status;
     }
 
     /** Runs {@code work}, calling {@code onSuccess} on the FX thread; errors show a dialog. */
@@ -35,8 +38,16 @@ public class AsyncRunner {
                 return work.call();
             }
         };
-        task.setOnSucceeded(e -> onSuccess.accept(task.getValue()));
-        task.setOnFailed(e -> onError.accept(task.getException()));
+        // Drive the app-wide busy indicator for the lifetime of the task.
+        status.busyStart();
+        task.setOnSucceeded(e -> {
+            status.busyEnd();
+            onSuccess.accept(task.getValue());
+        });
+        task.setOnFailed(e -> {
+            status.busyEnd();
+            onError.accept(task.getException());
+        });
         executor.execute(task);
     }
 }

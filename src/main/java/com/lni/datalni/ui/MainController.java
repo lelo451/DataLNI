@@ -3,8 +3,10 @@ package com.lni.datalni.ui;
 import atlantafx.base.controls.ToggleSwitch;
 import com.lni.datalni.security.AuthenticationService;
 import com.lni.datalni.security.CurrentUser;
+import com.lni.datalni.ui.support.StatusService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.StackPane;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.context.annotation.Scope;
@@ -20,27 +22,35 @@ public class MainController {
     private final ThemeManager themeManager;
     private final AuthenticationService authenticationService;
     private final StageManager stageManager;
+    private final StatusService status;
 
     @FXML private StackPane contentArea;
     @FXML private Label userLabel;
     @FXML private Label roleLabel;
     @FXML private ToggleSwitch themeToggle;
     @FXML private FontIcon themeIcon;
+    @FXML private ProgressIndicator busyIndicator;
+    @FXML private Label statusMessage;
 
     public MainController(SpringFxmlLoader fxmlLoader, CurrentUser currentUser,
                           ThemeManager themeManager, AuthenticationService authenticationService,
-                          StageManager stageManager) {
+                          StageManager stageManager, StatusService status) {
         this.fxmlLoader = fxmlLoader;
         this.currentUser = currentUser;
         this.themeManager = themeManager;
         this.authenticationService = authenticationService;
         this.stageManager = stageManager;
+        this.status = status;
     }
 
     @FXML
     private void initialize() {
         userLabel.setText(currentUser.getUsername());
         roleLabel.setText(currentUser.getRolesDisplay());
+
+        busyIndicator.visibleProperty().bind(status.busyProperty());
+        busyIndicator.managedProperty().bind(status.busyProperty());
+        statusMessage.textProperty().bind(status.messageProperty());
 
         themeToggle.setSelected(themeManager.isDark());
         updateThemeIcon(themeManager.isDark());
