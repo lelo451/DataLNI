@@ -111,6 +111,12 @@
             <version>${ikonli.version}</version>
         </dependency>
 
+        <!-- CSV parsing for import (JSON uses the bundled jackson-databind). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+        </dependency>
+
         <!-- DB2 JDBC driver (IBM Data Server Driver - JCC) -->
         <dependency>
             <groupId>com.ibm.db2</groupId>
