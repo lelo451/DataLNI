@@ -90,7 +90,7 @@ public class ProjectViewController {
 
     @FXML
     private void onNew() {
-        stageManager.<ProjectFormController>openModal("project-form.fxml", "New project", form -> {
+        stageManager.<ProjectFormController>openModal("project-form.fxml", Messages.get("project.form.new.title"), form -> {
             form.setModel(null);
             form.setOnSaved(this::load);
         });
@@ -102,7 +102,7 @@ public class ProjectViewController {
         if (selected == null) {
             return;
         }
-        stageManager.<ProjectFormController>openModal("project-form.fxml", "Edit project", form -> {
+        stageManager.<ProjectFormController>openModal("project-form.fxml", Messages.get("project.form.edit.title"), form -> {
             form.setModel(selected);
             form.setOnSaved(this::load);
         });

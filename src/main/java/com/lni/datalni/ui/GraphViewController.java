@@ -123,7 +123,7 @@ public class GraphViewController {
 
     @FXML
     private void onNewGraph() {
-        stageManager.<GraphFormController>openModal("graph-form.fxml", "New graph", form -> {
+        stageManager.<GraphFormController>openModal("graph-form.fxml", Messages.get("graph.form.new.title"), form -> {
             form.setModel(null);
             form.setOnSaved(this::loadGraphs);
         });
@@ -135,7 +135,7 @@ public class GraphViewController {
         if (selected == null) {
             return;
         }
-        stageManager.<GraphFormController>openModal("graph-form.fxml", "Edit graph", form -> {
+        stageManager.<GraphFormController>openModal("graph-form.fxml", Messages.get("graph.form.edit.title"), form -> {
             form.setModel(selected);
             form.setOnSaved(this::loadGraphs);
         });
@@ -167,7 +167,7 @@ public class GraphViewController {
             return;
         }
         stageManager.<DataNumberFormController>openModal(
-                "datanumber-form.fxml", "New data number", form -> {
+                "datanumber-form.fxml", Messages.get("datanumber.form.new.title"), form -> {
                     form.setGraphs(graphTable.getItems());
                     form.setGraphId(graph.getId());
                     form.setModel(null);
@@ -183,7 +183,7 @@ public class GraphViewController {
             return;
         }
         stageManager.<DataNumberFormController>openModal(
-                "datanumber-form.fxml", "Edit data number", form -> {
+                "datanumber-form.fxml", Messages.get("datanumber.form.edit.title"), form -> {
                     form.setGraphs(graphTable.getItems());
                     form.setGraphId(graph.getId());
                     form.setModel(selected);

@@ -117,7 +117,7 @@ public class SustainabilityViewController {
     @FXML
     private void onNew() {
         stageManager.<SustainabilityFormController>openModal(
-                "sustainability-form.fxml", "New publication", form -> {
+                "sustainability-form.fxml", Messages.get("sustainability.form.new.title"), form -> {
                     form.setModel(null);
                     form.setOnSaved(this::load);
                 });
@@ -130,7 +130,7 @@ public class SustainabilityViewController {
             return;
         }
         stageManager.<SustainabilityFormController>openModal(
-                "sustainability-form.fxml", "Edit publication", form -> {
+                "sustainability-form.fxml", Messages.get("sustainability.form.edit.title"), form -> {
                     form.setModel(selected);
                     form.setOnSaved(this::load);
                 });
