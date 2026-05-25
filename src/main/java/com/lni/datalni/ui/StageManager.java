@@ -1,16 +1,25 @@
 package com.lni.datalni.ui;
 
+import com.lni.datalni.ui.imports.ImportController;
+import com.lni.datalni.ui.imports.ImportField;
+import com.lni.datalni.ui.imports.ParsedFile;
+import com.lni.datalni.ui.imports.RowImporter;
+import com.lni.datalni.ui.support.Dialogs;
+import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.SvgIcons;
+import com.lni.datalni.ui.support.TabularImporter;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.robot.Robot;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +119,35 @@ public class StageManager {
             // pointer unavailable -> primary screen
         }
         return Screen.getPrimary();
+    }
+
+    /**
+     * Prompts for a CSV/JSON file, parses it, and opens the column-mapping import dialog
+     * for the given destination fields and row importer; {@code onImported} refreshes the view.
+     */
+    public void openImport(String title, List<ImportField> fields,
+                           RowImporter importer, Runnable onImported) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(title);
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV, JSON", "*.csv", "*.json"));
+        File file = chooser.showOpenDialog(primaryStage);
+        if (file == null) {
+            return;
+        }
+        ParsedFile parsed;
+        try {
+            parsed = TabularImporter.parse(file);
+        } catch (Exception e) {
+            Dialogs.error(Messages.get("import.fileError"), e);
+            return;
+        }
+        if (parsed.columns().isEmpty()) {
+            Dialogs.error(Messages.get("import.fileError"), Messages.get("import.emptyFile"));
+            return;
+        }
+        this.<ImportController>openModal("import-dialog.fxml", title,
+                controller -> controller.configure(fields, parsed, importer, onImported));
     }
 
     /**
