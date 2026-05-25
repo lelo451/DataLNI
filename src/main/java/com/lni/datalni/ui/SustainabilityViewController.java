@@ -15,10 +15,13 @@ import com.lni.datalni.ui.support.LinkOpener;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.SdgCatalog;
+import com.lni.datalni.ui.support.StatusService;
+import com.lni.datalni.ui.support.Tables;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -39,9 +42,11 @@ public class SustainabilityViewController {
     private final CurrentUser currentUser;
     private final StageManager stageManager;
     private final AsyncRunner async;
+    private final StatusService status;
 
     @FXML private TextField searchField;
     @FXML private TextField yearField;
+    @FXML private Label countLabel;
     @FXML private TableView<SustainabilityDto> table;
     @FXML private TableColumn<SustainabilityDto, Integer> idColumn;
     @FXML private TableColumn<SustainabilityDto, Integer> yearColumn;
@@ -59,11 +64,12 @@ public class SustainabilityViewController {
 
     public SustainabilityViewController(SustainabilityService sustainabilityService,
                                         CurrentUser currentUser, StageManager stageManager,
-                                        AsyncRunner async) {
+                                        AsyncRunner async, StatusService status) {
         this.sustainabilityService = sustainabilityService;
         this.currentUser = currentUser;
         this.stageManager = stageManager;
         this.async = async;
+        this.status = status;
     }
 
     @FXML
@@ -80,12 +86,19 @@ public class SustainabilityViewController {
 
         // Stretch columns to fill the full table width (prefWidth acts as the share).
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        Tables.placeholder(table, Messages.get("table.empty"));
+        searchField.setOnAction(e -> onSearch());
+        yearField.setOnAction(e -> onSearch());
 
         boolean canEdit = currentUser.canEdit();
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);
         deleteButton.setVisible(canEdit);
         importButton.setVisible(canEdit);
+        if (canEdit) {
+            Tables.onDoubleClick(table, this::editRow);
+            Tables.onDeleteKey(table, this::onDelete);
+        }
 
         selection = RowSelection.install(table);
         selection.setOnChange(this::updateActionButtons);
@@ -123,6 +136,7 @@ public class SustainabilityViewController {
 
     private void populate(List<SustainabilityDto> rows) {
         table.setItems(FXCollections.observableArrayList(rows));
+        countLabel.setText(Messages.get("table.count", String.valueOf(rows.size())));
     }
 
     private static Integer parseYear(String text) {
@@ -148,12 +162,15 @@ public class SustainabilityViewController {
     @FXML
     private void onEdit() {
         List<SustainabilityDto> chosen = selection.getSelected();
-        if (chosen.size() != 1) {
-            return;
+        if (chosen.size() == 1) {
+            editRow(chosen.get(0));
         }
+    }
+
+    private void editRow(SustainabilityDto item) {
         stageManager.<SustainabilityFormController>openModal(
                 "sustainability-form.fxml", Messages.get("sustainability.form.edit.title"), form -> {
-                    form.setModel(chosen.get(0));
+                    form.setModel(item);
                     form.setOnSaved(this::load);
                 });
     }
@@ -196,12 +213,16 @@ public class SustainabilityViewController {
                 ? Messages.get("sustainability.delete.message", String.valueOf(chosen.get(0).getId()))
                 : Messages.get("delete.confirmMany", String.valueOf(chosen.size()));
         if (Dialogs.confirm(Messages.get("sustainability.delete.title"), message)) {
+            int count = chosen.size();
             async.run(() -> {
                 for (SustainabilityDto item : chosen) {
                     sustainabilityService.delete(item.getId());
                 }
                 return null;
-            }, ok -> load());
+            }, ok -> {
+                load();
+                status.info(Messages.get("status.deleted", String.valueOf(count)));
+            });
         }
     }
 

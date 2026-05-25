@@ -25,6 +25,7 @@
         <Button text="Atualizar" onAction="#onRefresh">
             <graphic><FontIcon iconLiteral="fas-sync"/></graphic>
         </Button>
+        <Label fx:id="graphCountLabel" styleClass="status-value"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="importGraphButton" text="Importar" onAction="#onImportGraphs">
             <graphic><FontIcon iconLiteral="fas-file-import"/></graphic>
@@ -49,7 +50,8 @@
     </TableView>
 
     <HBox spacing="8.0" alignment="CENTER_LEFT">
-        <Label text="Números (UEM) do gráfico selecionado" styleClass="section-title"/>
+        <Label fx:id="dataNumberHeader" text="Números (UEM) do gráfico selecionado" styleClass="section-title"/>
+        <Label fx:id="dataNumberCountLabel" styleClass="status-value"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="importDataNumberButton" text="Importar" onAction="#onImportDataNumbers">
             <graphic><FontIcon iconLiteral="fas-file-import"/></graphic>

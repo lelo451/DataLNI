@@ -29,6 +29,7 @@
         <Button text="Atualizar" onAction="#onRefresh">
             <graphic><FontIcon iconLiteral="fas-sync"/></graphic>
         </Button>
+        <Label fx:id="countLabel" styleClass="status-value"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="importButton" text="Importar" onAction="#onImport">
             <graphic><FontIcon iconLiteral="fas-file-import"/></graphic>

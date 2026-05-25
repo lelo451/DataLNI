@@ -13,9 +13,12 @@ import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Messages;
 import com.lni.datalni.ui.support.RowSelection;
 import com.lni.datalni.ui.support.SdgCatalog;
+import com.lni.datalni.ui.support.StatusService;
+import com.lni.datalni.ui.support.Tables;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -35,6 +38,7 @@ public class ProjectViewController {
     private final CurrentUser currentUser;
     private final StageManager stageManager;
     private final AsyncRunner async;
+    private final StatusService status;
 
     @FXML private TextField searchField;
     @FXML private TableView<ProjectDto> table;
@@ -43,6 +47,7 @@ public class ProjectViewController {
     @FXML private TableColumn<ProjectDto, String> coordinatorColumn;
     @FXML private TableColumn<ProjectDto, String> eprotocolColumn;
     @FXML private TableColumn<ProjectDto, String> odsColumn;
+    @FXML private Label countLabel;
     @FXML private Button newButton;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
@@ -51,11 +56,12 @@ public class ProjectViewController {
     private RowSelection<ProjectDto> selection;
 
     public ProjectViewController(ProjectService projectService, CurrentUser currentUser,
-                                 StageManager stageManager, AsyncRunner async) {
+                                 StageManager stageManager, AsyncRunner async, StatusService status) {
         this.projectService = projectService;
         this.currentUser = currentUser;
         this.stageManager = stageManager;
         this.async = async;
+        this.status = status;
     }
 
     @FXML
@@ -68,12 +74,18 @@ public class ProjectViewController {
 
         // Stretch columns to fill the full table width (prefWidth acts as the share).
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        Tables.placeholder(table, Messages.get("table.empty"));
+        searchField.setOnAction(e -> onSearch());
 
         boolean canEdit = currentUser.canEdit();
         newButton.setVisible(canEdit);
         editButton.setVisible(canEdit);
         deleteButton.setVisible(canEdit);
         importButton.setVisible(canEdit);
+        if (canEdit) {
+            Tables.onDoubleClick(table, this::editRow);
+            Tables.onDeleteKey(table, this::onDelete);
+        }
 
         selection = RowSelection.install(table);
         selection.setOnChange(this::updateActionButtons);
@@ -108,6 +120,7 @@ public class ProjectViewController {
 
     private void populate(List<ProjectDto> rows) {
         table.setItems(FXCollections.observableArrayList(rows));
+        countLabel.setText(Messages.get("table.count", String.valueOf(rows.size())));
     }
 
     @FXML
@@ -121,11 +134,14 @@ public class ProjectViewController {
     @FXML
     private void onEdit() {
         List<ProjectDto> chosen = selection.getSelected();
-        if (chosen.size() != 1) {
-            return;
+        if (chosen.size() == 1) {
+            editRow(chosen.get(0));
         }
+    }
+
+    private void editRow(ProjectDto project) {
         stageManager.<ProjectFormController>openModal("project-form.fxml", Messages.get("project.form.edit.title"), form -> {
-            form.setModel(chosen.get(0));
+            form.setModel(project);
             form.setOnSaved(this::load);
         });
     }
@@ -164,12 +180,16 @@ public class ProjectViewController {
                 ? Messages.get("project.delete.message", String.valueOf(chosen.get(0).getId()))
                 : Messages.get("delete.confirmMany", String.valueOf(chosen.size()));
         if (Dialogs.confirm(Messages.get("project.delete.title"), message)) {
+            int count = chosen.size();
             async.run(() -> {
                 for (ProjectDto project : chosen) {
                     projectService.delete(project.getId());
                 }
                 return null;
-            }, ok -> load());
+            }, ok -> {
+                load();
+                status.info(Messages.get("status.deleted", String.valueOf(count)));
+            });
         }
     }
 }
