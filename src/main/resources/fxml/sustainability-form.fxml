@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.lni.datalni.ui.SustainabilityFormController"
+      spacing="12.0" prefWidth="520.0">
+    <padding>
+        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+    </padding>
+
+    <GridPane hgap="10.0" vgap="10.0">
+        <Label text="Ano *" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Spinner fx:id="yearSpinner" editable="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="ODS" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Spinner fx:id="odsSpinner" editable="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Título *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="titleField" prefWidth="360.0" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Autor" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="authorField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Link" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="linkField" promptText="https://..." GridPane.rowIndex="4"
+                   GridPane.columnIndex="1"/>
+
+        <Label text="Publicação" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="publishedPicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>
+
+    <HBox spacing="8.0" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Cancelar" cancelButton="true" onAction="#onCancel"/>
+        <Button text="Salvar" defaultButton="true" onAction="#onSave"/>
+    </HBox>
+</VBox>

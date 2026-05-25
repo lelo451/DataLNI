@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lni.datalni.ui.MainController">
+
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="Arquivo">
+                    <items>
+                        <MenuItem text="Sair" onAction="#onExit"/>
+                    </items>
+                </Menu>
+                <Menu text="Exibir">
+                    <items>
+                        <MenuItem text="Alternar tema claro/escuro" onAction="#onToggleTheme"/>
+                    </items>
+                </Menu>
+                <Menu text="Conta">
+                    <items>
+                        <MenuItem text="Sair da conta" onAction="#onLogout"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+    <left>
+        <VBox spacing="6.0" prefWidth="200.0" styleClass="nav-pane">
+            <padding>
+                <Insets top="16.0" right="12.0" bottom="16.0" left="12.0"/>
+            </padding>
+            <Label text="Módulos" styleClass="nav-header"/>
+            <Button text="Gráficos" maxWidth="Infinity" onAction="#showGraphs"/>
+            <Button text="Projetos" maxWidth="Infinity" onAction="#showProjects"/>
+            <Button text="Sustentabilidade" maxWidth="Infinity" onAction="#showSustainability"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea">
+            <padding>
+                <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+            </padding>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="status-bar">
+            <padding>
+                <Insets top="6.0" right="12.0" bottom="6.0" left="12.0"/>
+            </padding>
+            <Label text="Usuário:"/>
+            <Label fx:id="userLabel" styleClass="status-value"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="Perfil:"/>
+            <Label fx:id="roleLabel" styleClass="status-value"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="DataLNI"/>
+        </HBox>
+    </bottom>
+</BorderPane>

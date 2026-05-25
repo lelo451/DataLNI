@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.lni.datalni.ui.SustainabilityViewController"
+      spacing="10.0">
+    <padding>
+        <Insets top="4.0" right="4.0" bottom="4.0" left="4.0"/>
+    </padding>
+
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <Label text="Sustentabilidade" styleClass="module-title"/>
+        <TextField fx:id="searchField" promptText="Buscar título/autor" prefWidth="240.0"/>
+        <TextField fx:id="yearField" promptText="Ano" prefWidth="90.0"/>
+        <Button text="Buscar" onAction="#onSearch"/>
+        <Button text="Atualizar" onAction="#onRefresh"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="newButton" text="Novo" onAction="#onNew"/>
+        <Button fx:id="editButton" text="Editar" onAction="#onEdit"/>
+        <Button fx:id="deleteButton" text="Excluir" onAction="#onDelete"/>
+    </HBox>
+
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="60.0"/>
+            <TableColumn fx:id="yearColumn" text="Ano" prefWidth="80.0"/>
+            <TableColumn fx:id="titleColumn" text="Título" prefWidth="280.0"/>
+            <TableColumn fx:id="authorColumn" text="Autor" prefWidth="180.0"/>
+            <TableColumn fx:id="odsColumn" text="ODS" prefWidth="200.0"/>
+            <TableColumn fx:id="publishedColumn" text="Publicação" prefWidth="120.0"/>
+            <TableColumn fx:id="linkColumn" text="Link" prefWidth="220.0"/>
+        </columns>
+    </TableView>
+</VBox>
