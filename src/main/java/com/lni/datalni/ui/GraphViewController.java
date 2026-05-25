@@ -168,6 +168,7 @@ public class GraphViewController {
         }
         stageManager.<DataNumberFormController>openModal(
                 "datanumber-form.fxml", "New data number", form -> {
+                    form.setGraphs(graphTable.getItems());
                     form.setGraphId(graph.getId());
                     form.setModel(null);
                     form.setOnSaved(() -> loadDataNumbers(graph));
@@ -183,6 +184,7 @@ public class GraphViewController {
         }
         stageManager.<DataNumberFormController>openModal(
                 "datanumber-form.fxml", "Edit data number", form -> {
+                    form.setGraphs(graphTable.getItems());
                     form.setGraphId(graph.getId());
                     form.setModel(selected);
                     form.setOnSaved(() -> loadDataNumbers(graph));

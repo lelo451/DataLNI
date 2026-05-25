@@ -22,8 +22,11 @@
     </padding>
 
     <GridPane hgap="10.0" vgap="10.0">
-        <Label text="Gráfico" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <Label fx:id="graphLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <TextFlow GridPane.rowIndex="0" GridPane.columnIndex="0">
+            <Text text="Gráfico "/><Text text="*" styleClass="required-asterisk"/>
+        </TextFlow>
+        <ComboBox fx:id="graphCombo" prefWidth="260.0"
+                  GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
         <TextFlow GridPane.rowIndex="1" GridPane.columnIndex="0">
             <Text text="Mês "/><Text text="*" styleClass="required-asterisk"/>
