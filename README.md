@@ -65,6 +65,16 @@ is large/slow); remove the annotation to exercise the real DB2 insert path.
 
 ## Native packaging (jpackage)
 
+Convenience scripts (use the Maven Wrapper, so only JDK 21 is needed) — run on the target OS:
+
+```bash
+./package-linux.sh                 # Linux  -> target/dist/DATALNI/bin/DATALNI
+package-windows.bat                # Windows -> target\dist\DATALNI\DATALNI.exe
+# Override defaults: JPACKAGE_TYPE=DEB APP_PROFILE=dev ./package-linux.sh
+```
+
+Or directly with Maven:
+
 ```bash
 mvn -Pjpackage -DskipTests package        # -> target/dist/DATALNI (self-contained app image)
 ```
