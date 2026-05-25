@@ -5,10 +5,9 @@ import com.lni.datalni.service.ProjectService;
 import com.lni.datalni.service.dto.ProjectCriteria;
 import com.lni.datalni.service.dto.ProjectDto;
 import com.lni.datalni.ui.support.AsyncRunner;
+import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.SdgCatalog;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -51,14 +50,11 @@ public class ProjectViewController {
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getId()));
-        titleColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().getTitle()));
-        coordinatorColumn.setCellValueFactory(
-                c -> new ReadOnlyStringWrapper(c.getValue().getCoordinator()));
-        eprotocolColumn.setCellValueFactory(
-                c -> new ReadOnlyStringWrapper(c.getValue().getEprotocol()));
-        odsColumn.setCellValueFactory(
-                c -> new ReadOnlyStringWrapper(SdgCatalog.label(c.getValue().getOds())));
+        idColumn.setCellValueFactory(Cells.of(ProjectDto::getId));
+        titleColumn.setCellValueFactory(Cells.of(ProjectDto::getTitle));
+        coordinatorColumn.setCellValueFactory(Cells.of(ProjectDto::getCoordinator));
+        eprotocolColumn.setCellValueFactory(Cells.of(ProjectDto::getEprotocol));
+        odsColumn.setCellValueFactory(Cells.of(p -> SdgCatalog.label(p.getOds())));
 
         boolean canEdit = currentUser.canEdit();
         newButton.setVisible(canEdit);

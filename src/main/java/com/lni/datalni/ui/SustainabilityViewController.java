@@ -5,11 +5,10 @@ import com.lni.datalni.service.SustainabilityService;
 import com.lni.datalni.service.dto.SustainabilityCriteria;
 import com.lni.datalni.service.dto.SustainabilityDto;
 import com.lni.datalni.ui.support.AsyncRunner;
+import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
 import com.lni.datalni.ui.support.LinkOpener;
 import com.lni.datalni.ui.support.SdgCatalog;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -58,16 +57,15 @@ public class SustainabilityViewController {
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getId()));
-        yearColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getYear()));
-        titleColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().getTitle()));
-        authorColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().getAuthor()));
-        odsColumn.setCellValueFactory(
-                c -> new ReadOnlyStringWrapper(SdgCatalog.label(c.getValue().getOds())));
-        publishedColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(
-                c.getValue().getPublished() == null ? "" : c.getValue().getPublished().toString()));
+        idColumn.setCellValueFactory(Cells.of(SustainabilityDto::getId));
+        yearColumn.setCellValueFactory(Cells.of(SustainabilityDto::getYear));
+        titleColumn.setCellValueFactory(Cells.of(SustainabilityDto::getTitle));
+        authorColumn.setCellValueFactory(Cells.of(SustainabilityDto::getAuthor));
+        odsColumn.setCellValueFactory(Cells.of(s -> SdgCatalog.label(s.getOds())));
+        publishedColumn.setCellValueFactory(Cells.of(
+                s -> s.getPublished() == null ? "" : s.getPublished().toString()));
 
-        linkColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue()));
+        linkColumn.setCellValueFactory(Cells.of(s -> s));
         linkColumn.setCellFactory(col -> new LinkCell());
 
         boolean canEdit = currentUser.canEdit();

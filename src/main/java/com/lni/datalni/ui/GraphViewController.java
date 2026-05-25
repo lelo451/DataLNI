@@ -7,9 +7,8 @@ import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.support.AsyncRunner;
+import com.lni.datalni.ui.support.Cells;
 import com.lni.datalni.ui.support.Dialogs;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -61,16 +60,15 @@ public class GraphViewController {
 
     @FXML
     private void initialize() {
-        graphIdColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getId()));
-        graphTitleColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().getTitle()));
-        graphDescriptionColumn.setCellValueFactory(
-                c -> new ReadOnlyStringWrapper(c.getValue().getDescription()));
+        graphIdColumn.setCellValueFactory(Cells.of(GraphDto::getId));
+        graphTitleColumn.setCellValueFactory(Cells.of(GraphDto::getTitle));
+        graphDescriptionColumn.setCellValueFactory(Cells.of(GraphDto::getDescription));
 
-        dnMonthColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getMonth()));
-        dnYearColumn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getYear()));
-        dnValueColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(
-                c.getValue().getValue() == null ? "" : c.getValue().getValue().toPlainString()));
-        dnClazzColumn.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().getClazz()));
+        dnMonthColumn.setCellValueFactory(Cells.of(DataNumberDto::getMonth));
+        dnYearColumn.setCellValueFactory(Cells.of(DataNumberDto::getYear));
+        dnValueColumn.setCellValueFactory(Cells.of(
+                dn -> dn.getValue() == null ? "" : dn.getValue().toPlainString()));
+        dnClazzColumn.setCellValueFactory(Cells.of(DataNumberDto::getClazz));
 
         boolean canEdit = currentUser.canEdit();
         newGraphButton.setVisible(canEdit);
