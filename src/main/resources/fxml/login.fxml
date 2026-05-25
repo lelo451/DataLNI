@@ -16,7 +16,7 @@
         <Insets top="36.0" right="40.0" bottom="36.0" left="40.0"/>
     </padding>
 
-    <ImageView fx:id="logo" fitHeight="110.0" preserveRatio="true"/>
+    <ImageView fx:id="logo" fitHeight="150.0" preserveRatio="true"/>
     <Label text="Gestão de dados PLD" styleClass="login-subtitle"/>
 
     <VBox spacing="6.0">
