@@ -29,8 +29,9 @@
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage-maven-plugin.version>1.7.4</jpackage-maven-plugin.version>
         <main.class>com.lni.datalni.Launcher</main.class>
-        <!-- JavaFX native classifier; overridden per-OS by the profiles below. -->
+        <!-- JavaFX native classifier + jpackage icon; overridden per-OS by the profiles below. -->
         <javafx.platform>linux</javafx.platform>
+        <app.icon>src/packaging/icon.png</app.icon>
         <!-- jpackage requires a numeric version (no -SNAPSHOT). -->
         <app.version>1.0.0</app.version>
     </properties>
@@ -243,22 +244,34 @@
         <profile>
             <id>jfx-linux</id>
             <activation><os><family>unix</family><name>Linux</name></os></activation>
-            <properties><javafx.platform>linux</javafx.platform></properties>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+                <app.icon>src/packaging/icon.png</app.icon>
+            </properties>
         </profile>
         <profile>
             <id>jfx-windows</id>
             <activation><os><family>windows</family></os></activation>
-            <properties><javafx.platform>win</javafx.platform></properties>
+            <properties>
+                <javafx.platform>win</javafx.platform>
+                <app.icon>src/packaging/icon.ico</app.icon>
+            </properties>
         </profile>
         <profile>
             <id>jfx-mac-x64</id>
             <activation><os><family>mac</family><arch>x86_64</arch></os></activation>
-            <properties><javafx.platform>mac</javafx.platform></properties>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+                <app.icon>src/packaging/icon.icns</app.icon>
+            </properties>
         </profile>
         <profile>
             <id>jfx-mac-aarch64</id>
             <activation><os><family>mac</family><arch>aarch64</arch></os></activation>
-            <properties><javafx.platform>mac-aarch64</javafx.platform></properties>
+            <properties>
+                <javafx.platform>mac-aarch64</javafx.platform>
+                <app.icon>src/packaging/icon.icns</app.icon>
+            </properties>
         </profile>
 
         <!--
@@ -367,7 +380,7 @@
                                     <destination>${project.build.directory}/dist</destination>
                                     <mainJar>${project.build.finalName}.jar</mainJar>
                                     <mainClass>${main.class}</mainClass>
-                                    <icon>src/packaging/icon.png</icon>
+                                    <icon>${app.icon}</icon>
                                     <javaOptions>
                                         <option>-Dspring.profiles.active=prod</option>
                                     </javaOptions>

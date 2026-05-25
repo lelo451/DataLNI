@@ -74,8 +74,9 @@ The `jpackage` profile lays the app jar + all dependencies (including the JavaFX
 runtime — so the result needs **nothing pre-installed** on the user's machine.
 
 **Per-OS:** `jpackage` cannot cross-compile — run it **on each target OS** (the OS profiles
-auto-pick the right JavaFX natives). Choose the artifact type with `-Djpackage.type` (default
-`APP_IMAGE`, which needs no extra tooling):
+auto-pick the right JavaFX natives and icon: `icon.png` on Linux, `icon.ico` on Windows,
+`icon.icns` on macOS — all under `src/packaging/`). Choose the artifact type with
+`-Djpackage.type` (default `APP_IMAGE`, which needs no extra tooling):
 
 | OS | Command | Extra tooling |
 |----|---------|---------------|
