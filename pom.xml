@@ -293,6 +293,8 @@
             <id>jpackage</id>
             <properties>
                 <jpackage.type>APP_IMAGE</jpackage.type>
+                <!-- Spring profile baked into the bundle; override with -Dapp.profile=dev. -->
+                <app.profile>prod</app.profile>
                 <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
                 <jpackage.input>${project.build.directory}/jpackage/input</jpackage.input>
             </properties>
@@ -388,7 +390,7 @@
                                     <mainClass>${main.class}</mainClass>
                                     <icon>${app.icon}</icon>
                                     <javaOptions>
-                                        <option>-Dspring.profiles.active=prod</option>
+                                        <option>-Dspring.profiles.active=${app.profile}</option>
                                     </javaOptions>
                                 </configuration>
                             </execution>
