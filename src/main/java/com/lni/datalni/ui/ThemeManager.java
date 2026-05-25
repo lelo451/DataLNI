@@ -15,8 +15,7 @@ public class ThemeManager {
     private boolean dark = false;
 
     public void applyDefault() {
-        dark = false;
-        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+        apply(false);
     }
 
     public boolean isDark() {
@@ -24,7 +23,12 @@ public class ThemeManager {
     }
 
     public void toggle() {
-        dark = !dark;
+        apply(!dark);
+    }
+
+    /** Sets the theme to dark or light. */
+    public void apply(boolean dark) {
+        this.dark = dark;
         Application.setUserAgentStylesheet(dark
                 ? new PrimerDark().getUserAgentStylesheet()
                 : new PrimerLight().getUserAgentStylesheet());

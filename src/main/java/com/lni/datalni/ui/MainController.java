@@ -1,5 +1,6 @@
 package com.lni.datalni.ui;
 
+import atlantafx.base.controls.ToggleSwitch;
 import com.lni.datalni.security.AuthenticationService;
 import com.lni.datalni.security.CurrentUser;
 import javafx.application.Platform;
@@ -23,6 +24,7 @@ public class MainController {
     @FXML private StackPane contentArea;
     @FXML private Label userLabel;
     @FXML private Label roleLabel;
+    @FXML private ToggleSwitch themeToggle;
 
     public MainController(SpringFxmlLoader fxmlLoader, CurrentUser currentUser,
                           ThemeManager themeManager, AuthenticationService authenticationService,
@@ -38,6 +40,10 @@ public class MainController {
     private void initialize() {
         userLabel.setText(currentUser.getUsername());
         roleLabel.setText(currentUser.getRolesDisplay());
+
+        themeToggle.setSelected(themeManager.isDark());
+        themeToggle.selectedProperty().addListener((obs, was, dark) -> themeManager.apply(dark));
+
         showGraphs();
     }
 
@@ -54,11 +60,6 @@ public class MainController {
     @FXML
     private void showSustainability() {
         setContent("sustainability-view.fxml");
-    }
-
-    @FXML
-    private void onToggleTheme() {
-        themeManager.toggle();
     }
 
     @FXML

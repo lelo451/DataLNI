@@ -13,30 +13,36 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import atlantafx.base.controls.ToggleSwitch?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.lni.datalni.ui.MainController">
 
     <top>
-        <MenuBar>
-            <menus>
-                <Menu text="Arquivo">
-                    <items>
-                        <MenuItem text="Sair" onAction="#onExit"/>
-                    </items>
-                </Menu>
-                <Menu text="Exibir">
-                    <items>
-                        <MenuItem text="Alternar tema claro/escuro" onAction="#onToggleTheme"/>
-                    </items>
-                </Menu>
-                <Menu text="Conta">
-                    <items>
-                        <MenuItem text="Sair da conta" onAction="#onLogout"/>
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="top-bar">
+            <padding>
+                <Insets right="12.0"/>
+            </padding>
+            <MenuBar>
+                <menus>
+                    <Menu text="Arquivo">
+                        <items>
+                            <MenuItem text="Sair" onAction="#onExit"/>
+                        </items>
+                    </Menu>
+                    <Menu text="Conta">
+                        <items>
+                            <MenuItem text="Sair da conta" onAction="#onLogout"/>
+                        </items>
+                    </Menu>
+                </menus>
+            </MenuBar>
+            <Region HBox.hgrow="ALWAYS"/>
+            <FontIcon iconLiteral="fas-moon"/>
+            <Label text="Tema escuro"/>
+            <ToggleSwitch fx:id="themeToggle"/>
+        </HBox>
     </top>
 
     <left>

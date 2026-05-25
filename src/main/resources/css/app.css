@@ -41,6 +41,12 @@
     -fx-background-color: -color-bg-subtle;
 }
 
+.top-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 1 0;
+}
+
 .status-bar {
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-default;
