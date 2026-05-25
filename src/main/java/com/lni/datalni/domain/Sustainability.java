@@ -8,7 +8,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 
@@ -31,10 +33,14 @@ public class Sustainability {
     @Column(name = "CD_SUSTENTABILIDADE")
     private Integer id;
 
+    // AN_ANO and TP_ODS are SMALLINT in PLD.LNI_SUSTENTABILIDADE (SPEC §5.4); keep the
+    // Java type Integer but map the JDBC type as SMALLINT so schema validation matches.
     @Column(name = "AN_ANO")
+    @JdbcTypeCode(SqlTypes.SMALLINT)
     private Integer year;
 
     @Column(name = "TP_ODS")
+    @JdbcTypeCode(SqlTypes.SMALLINT)
     private Integer ods;
 
     @Column(name = "DE_TITULO", length = 250)
