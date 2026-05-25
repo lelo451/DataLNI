@@ -13,3 +13,7 @@ target/
 # App data / secrets
 .datalni/
 *.env
+
+# Environment-specific config (kept out of VCS)
+application-dev.yml
+application-prod.yml
