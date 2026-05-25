@@ -1,6 +1,6 @@
 spring:
   application:
-    name: DataLNI
+    name: Data LNI
   # Runs the dev profile (in-memory users) unless an explicit profile is set.
   profiles:
     default: dev
