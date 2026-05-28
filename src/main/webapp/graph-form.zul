@@ -1,0 +1,29 @@
+<?page title="Gráfico"?>
+<zk>
+    <window title="@load(vm.title)" mode="modal" closable="true" width="520px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.lni.datalni.ui.GraphFormVM')">
+        <vlayout spacing="8px" hflex="1">
+            <grid hflex="1">
+                <columns>
+                    <column width="140px"/>
+                    <column hflex="1"/>
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Título *"/>
+                        <textbox value="@bind(vm.dto.title)" hflex="1" maxlength="150"/>
+                    </row>
+                    <row>
+                        <label value="Descrição"/>
+                        <textbox value="@bind(vm.dto.description)" hflex="1" maxlength="150"/>
+                    </row>
+                </rows>
+            </grid>
+            <hbox pack="end" spacing="6px" hflex="1">
+                <button label="Cancelar" iconSclass="z-icon-times" onClick="@command('cancel')"/>
+                <button label="Salvar" iconSclass="z-icon-check" onClick="@command('save')"/>
+            </hbox>
+        </vlayout>
+    </window>
+</zk>

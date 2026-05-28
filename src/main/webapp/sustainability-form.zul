@@ -1,0 +1,50 @@
+<?page title="Publicação"?>
+<zk>
+    <window title="@load(vm.title)" mode="modal" closable="true" width="560px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.lni.datalni.ui.SustainabilityFormVM')">
+        <vlayout spacing="8px" hflex="1">
+            <grid hflex="1">
+                <columns>
+                    <column width="140px"/>
+                    <column hflex="1"/>
+                </columns>
+                <rows>
+                    <row>
+                        <label value="ODS"/>
+                        <combobox readonly="true" buttonVisible="true" hflex="1"
+                                  model="@load(vm.odsOptions)"
+                                  selectedItem="@bind(vm.dto.ods)">
+                            <template name="model">
+                                <comboitem label="@load(vm.odsLabel(each))"/>
+                            </template>
+                        </combobox>
+                    </row>
+                    <row>
+                        <label value="Título *"/>
+                        <textbox value="@bind(vm.dto.title)" hflex="1" maxlength="250"/>
+                    </row>
+                    <row>
+                        <label value="Link"/>
+                        <textbox value="@bind(vm.dto.link)" hflex="1" maxlength="550"/>
+                    </row>
+                    <row>
+                        <label value="Autor"/>
+                        <textbox value="@bind(vm.dto.author)" hflex="1" maxlength="200"/>
+                    </row>
+                    <row>
+                        <label value="Publicação"/>
+                        <!-- LocalDateConverter bridges LocalDate ↔ java.util.Date because ZK
+                             9 CE doesn't ship a native LocalDatebox. -->
+                        <datebox value="@bind(vm.dto.published) @converter('com.lni.datalni.ui.support.LocalDateConverter')"
+                                 format="dd/MM/yyyy" locale="pt_BR"/>
+                    </row>
+                </rows>
+            </grid>
+            <hbox pack="end" spacing="6px" hflex="1">
+                <button label="Cancelar" iconSclass="z-icon-times" onClick="@command('cancel')"/>
+                <button label="Salvar" iconSclass="z-icon-check" onClick="@command('save')"/>
+            </hbox>
+        </vlayout>
+    </window>
+</zk>

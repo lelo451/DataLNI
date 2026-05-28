@@ -1,0 +1,117 @@
+<?page title="Gráficos"?>
+<zk>
+    <borderlayout hflex="1" vflex="1"
+                  apply="org.zkoss.bind.BindComposer"
+                  viewModel="@id('vm') @init('com.lni.datalni.ui.GraphsVM')">
+        <center border="0">
+            <vlayout hflex="1" vflex="1" spacing="0">
+                <hlayout sclass="module-toolbar" valign="middle" spacing="6px">
+                    <textbox placeholder="Buscar título ou descrição"
+                             value="@bind(vm.search)" width="320px"
+                             onOK="@command('doSearch')"/>
+                    <button label="Buscar" iconSclass="z-icon-search"
+                            onClick="@command('doSearch')"/>
+                    <space hflex="1"/>
+                    <button label="Novo" iconSclass="z-icon-plus"
+                            onClick="@command('doNew')"
+                            visible="@load(vm.canEdit)"/>
+                    <button label="Editar" iconSclass="z-icon-pencil"
+                            onClick="@command('doEdit')"
+                            visible="@load(vm.canEdit)"
+                            disabled="@load(vm.selectedItems.size() ne 1)"/>
+                    <button label="Excluir" iconSclass="z-icon-trash"
+                            onClick="@command('doDelete')"
+                            visible="@load(vm.canEdit)"
+                            disabled="@load(empty vm.selectedItems)"/>
+                    <button label="Importar" iconSclass="fas fa-file-import"
+                            onClick='Executions.createComponents("/import-graphs.zul", null, null)'
+                            visible="@load(vm.canEdit)"/>
+                </hlayout>
+
+                <listbox sclass="module-table" hflex="1" vflex="2"
+                         multiple="true" checkmark="true"
+                         model="@load(vm.items)"
+                         selectedItem="@bind(vm.selected)"
+                         selectedItems="@bind(vm.selectedItems)"
+                         onSelect="@command('onSelectGraph')"
+                         emptyMessage="Nenhum gráfico">
+                    <listhead sizable="true">
+                        <listheader label="#" width="80px" sclass="sortable"
+                                    onClick="@command('onSort', column='id')"/>
+                        <listheader label="Título" hflex="2" sclass="sortable"
+                                    onClick="@command('onSort', column='title')"/>
+                        <listheader label="Descrição" hflex="3" sclass="sortable"
+                                    onClick="@command('onSort', column='description')"/>
+                    </listhead>
+                    <template name="model">
+                        <listitem>
+                            <listcell label="@load(each.id)"/>
+                            <listcell label="@load(each.title)"/>
+                            <listcell label="@load(each.description)"/>
+                        </listitem>
+                    </template>
+                </listbox>
+
+                <hbox align="center" pack="start" spacing="8px" hflex="1" sclass="paging-bar">
+                    <paging activePage="@bind(vm.activePage)"
+                            totalSize="@load(vm.totalSize)"
+                            pageSize="@load(vm.pageSize)"
+                            detailed="true"
+                            onPaging="@command('onPage')"/>
+                    <space hflex="1"/>
+                    <label value="@load(vm.itemsPerPageLabel)"/>
+                    <listbox mold="select" width="90px"
+                             model="@load(vm.pageSizeOptions)"
+                             selectedItem="@bind(vm.pageSize)"
+                             onSelect="@command('onChangePageSize')"/>
+                </hbox>
+
+                <!-- Detail: data numbers for the selected graph. -->
+                <hlayout sclass="detail-header" valign="middle">
+                    <label value="@load(vm.detailHeader)" hflex="1"/>
+                    <button label="Novo número" iconSclass="z-icon-plus"
+                            onClick="@command('doNewNumber')"
+                            visible="@load(vm.canEdit)"/>
+                    <button label="Editar" iconSclass="z-icon-pencil"
+                            onClick="@command('doEditNumber')"
+                            visible="@load(vm.canEdit)"
+                            disabled="@load(vm.selectedNumbers.size() ne 1)"/>
+                    <button label="Excluir" iconSclass="z-icon-trash"
+                            onClick="@command('doDeleteNumber')"
+                            visible="@load(vm.canEdit)"
+                            disabled="@load(empty vm.selectedNumbers)"/>
+                    <button label="Importar" iconSclass="fas fa-file-import"
+                            onClick='Executions.createComponents("/import-datanumbers.zul", null, null)'
+                            visible="@load(vm.canEdit)"/>
+                </hlayout>
+
+                <listbox sclass="module-table" hflex="1" vflex="2"
+                         multiple="true" checkmark="true"
+                         model="@load(vm.dataNumbers)"
+                         selectedItem="@bind(vm.selectedNumber)"
+                         selectedItems="@bind(vm.selectedNumbers)"
+                         emptyMessage="Sem números">
+                    <!-- DataNumbers detail list is loaded eagerly (small per-graph set),
+                         so client-side sort via sort="auto(field)" is enough — no need
+                         to round-trip to the server. -->
+                    <listhead sizable="true">
+                        <listheader label="#" width="80px" sort="auto(id)"/>
+                        <listheader label="Mês" width="80px" sort="auto(month)"/>
+                        <listheader label="Ano" width="100px" sort="auto(year)"/>
+                        <listheader label="Valor" width="140px" sort="auto(value)"/>
+                        <listheader label="Classe" hflex="1" sort="auto(clazz)"/>
+                    </listhead>
+                    <template name="model">
+                        <listitem>
+                            <listcell label="@load(each.id)"/>
+                            <listcell label="@load(each.month)"/>
+                            <listcell label="@load(each.year)"/>
+                            <listcell label="@load(vm.formatValue(each.value))"/>
+                            <listcell label="@load(each.clazz)"/>
+                        </listitem>
+                    </template>
+                </listbox>
+            </vlayout>
+        </center>
+    </borderlayout>
+</zk>

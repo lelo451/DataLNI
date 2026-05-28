@@ -1,0 +1,55 @@
+<?page title="Número"?>
+<zk>
+    <window title="@load(vm.title)" mode="modal" closable="true" width="520px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.lni.datalni.ui.DataNumberFormVM')">
+        <vlayout spacing="8px" hflex="1">
+            <grid hflex="1">
+                <columns>
+                    <column width="140px"/>
+                    <column hflex="1"/>
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Gráfico *"/>
+                        <!-- readonly="true" prevents typing arbitrary text; the user
+                             can still type to filter the popup list. -->
+                        <combobox readonly="true" buttonVisible="true" hflex="1"
+                                  model="@load(vm.graphOptions)"
+                                  selectedItem="@bind(vm.selectedGraph)">
+                            <template name="model">
+                                <comboitem label="@load(vm.graphLabel(each))"/>
+                            </template>
+                        </combobox>
+                    </row>
+                    <row>
+                        <label value="Mês"/>
+                        <combobox readonly="true" buttonVisible="true" width="220px"
+                                  model="@load(vm.monthOptions)"
+                                  selectedItem="@bind(vm.dto.month)">
+                            <template name="model">
+                                <comboitem label="@load(vm.monthLabel(each))"/>
+                            </template>
+                        </combobox>
+                    </row>
+                    <row>
+                        <label value="Ano *"/>
+                        <intbox value="@bind(vm.dto.year)" width="100px"/>
+                    </row>
+                    <row>
+                        <label value="Valor *"/>
+                        <decimalbox value="@bind(vm.dto.value)" width="140px" scale="2"/>
+                    </row>
+                    <row>
+                        <label value="Classe"/>
+                        <textbox value="@bind(vm.dto.clazz)" hflex="1" maxlength="150"/>
+                    </row>
+                </rows>
+            </grid>
+            <hbox pack="end" spacing="6px" hflex="1">
+                <button label="Cancelar" iconSclass="z-icon-times" onClick="@command('cancel')"/>
+                <button label="Salvar" iconSclass="z-icon-check" onClick="@command('save')"/>
+            </hbox>
+        </vlayout>
+    </window>
+</zk>

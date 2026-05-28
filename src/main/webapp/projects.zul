@@ -1,0 +1,76 @@
+<?page title="Projetos"?>
+<zk>
+    <vlayout hflex="1" vflex="1" spacing="0"
+             apply="org.zkoss.bind.BindComposer"
+             viewModel="@id('vm') @init('com.lni.datalni.ui.ProjectsVM')">
+        <hlayout sclass="module-toolbar" valign="middle" spacing="6px">
+            <textbox placeholder="Buscar título, coordenador, e-protocolo"
+                     value="@bind(vm.search)" width="320px"
+                     onOK="@command('doSearch')"/>
+            <intbox placeholder="ODS" value="@bind(vm.odsFilter)" width="80px"
+                    onOK="@command('doSearch')"/>
+            <button label="Buscar" iconSclass="z-icon-search"
+                    onClick="@command('doSearch')"/>
+            <space hflex="1"/>
+            <button label="Novo" iconSclass="z-icon-plus"
+                    onClick="@command('doNew')"
+                    visible="@load(vm.canEdit)"/>
+            <button label="Editar" iconSclass="z-icon-pencil"
+                    onClick="@command('doEdit')"
+                    visible="@load(vm.canEdit)"
+                    disabled="@load(vm.selectedItems.size() ne 1)"/>
+            <button label="Excluir" iconSclass="z-icon-trash"
+                    onClick="@command('doDelete')"
+                    visible="@load(vm.canEdit)"
+                    disabled="@load(empty vm.selectedItems)"/>
+            <button label="Importar" iconSclass="fas fa-file-import"
+                    onClick='Executions.createComponents("/import-projects.zul", null, null)'
+                    visible="@load(vm.canEdit)"/>
+        </hlayout>
+
+        <listbox sclass="module-table" hflex="1" vflex="1"
+                 multiple="true" checkmark="true"
+                 model="@load(vm.items)"
+                 selectedItem="@bind(vm.selected)"
+                 selectedItems="@bind(vm.selectedItems)"
+                 emptyMessage="Nenhum registro">
+            <listhead sizable="true">
+                <listheader label="#" width="80px" sclass="sortable"
+                            onClick="@command('onSort', column='id')"/>
+                <listheader label="ODS" width="200px" sclass="sortable"
+                            onClick="@command('onSort', column='ods')"/>
+                <listheader label="E-protocolo" width="160px" sclass="sortable"
+                            onClick="@command('onSort', column='eprotocol')"/>
+                <listheader label="Título" hflex="2" sclass="sortable"
+                            onClick="@command('onSort', column='title')"/>
+                <listheader label="Coordenador" hflex="1" sclass="sortable"
+                            onClick="@command('onSort', column='coordinator')"/>
+            </listhead>
+            <template name="model">
+                <listitem>
+                    <listcell label="@load(each.id)"/>
+                    <listcell label="@load(vm.odsLabel(each.ods))"/>
+                    <listcell label="@load(each.eprotocol)"/>
+                    <listcell label="@load(each.title)"/>
+                    <listcell label="@load(each.coordinator)"/>
+                </listitem>
+            </template>
+        </listbox>
+
+        <hbox align="center" pack="start" spacing="8px" hflex="1" sclass="paging-bar">
+            <paging activePage="@bind(vm.activePage)"
+                    totalSize="@load(vm.totalSize)"
+                    pageSize="@load(vm.pageSize)"
+                    detailed="true"
+                    onPaging="@command('onPage')"/>
+            <space hflex="1"/>
+            <label value="@load(vm.itemsPerPageLabel)"/>
+            <!-- mold="select" renders as a native <select> dropdown. Explicit width
+                 because hflex="min" was collapsing it below the option text. -->
+            <listbox mold="select" width="90px"
+                     model="@load(vm.pageSizeOptions)"
+                     selectedItem="@bind(vm.pageSize)"
+                     onSelect="@command('onChangePageSize')"/>
+        </hbox>
+    </vlayout>
+</zk>

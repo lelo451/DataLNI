@@ -1,0 +1,39 @@
+<?page title="DATA LNI - Sign in" contentType="text/html;charset=UTF-8"?>
+<?link rel="stylesheet" type="text/css" href="/css/app.css"?>
+<?link rel="stylesheet" type="text/css" href="/webjars/font-awesome/7.2.0/css/all.min.css"?>
+<zk>
+    <!-- Plain HTML form posts straight to /login so Spring Security's UsernamePasswordAuthenticationFilter
+         can pick it up. Using ZK's MVVM here would require an extra round-trip through /zkau before
+         redirecting. The form looks like a ZK page only because we wrap the host element in ZK styles. -->
+    <vlayout sclass="login-page" hflex="1" vflex="1"
+             style="display:flex;align-items:center;justify-content:center;height:100vh;">
+        <div sclass="login-card">
+            <div sclass="login-brand" align="center">
+                <image src="/img/logo.svg" width="96px" height="96px"/>
+            </div>
+            <html><![CDATA[
+                <form method="post" action="login" autocomplete="on">
+                    <div style="margin-bottom:12px;">
+                        <label for="username" style="display:block;margin-bottom:4px;">Usuário</label>
+                        <input id="username" name="username" type="text" autofocus="autofocus"
+                               style="width:100%;padding:8px;border:1px solid #c9d6e3;border-radius:4px;"/>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label for="password" style="display:block;margin-bottom:4px;">Senha</label>
+                        <input id="password" name="password" type="password"
+                               style="width:100%;padding:8px;border:1px solid #c9d6e3;border-radius:4px;"/>
+                    </div>
+                    <button type="submit"
+                            style="background:#1f3a5f;color:white;border:none;padding:10px 16px;
+                                   border-radius:4px;cursor:pointer;width:100%;">Entrar</button>
+                </form>
+            ]]></html>
+            <div sclass="login-error" if="${not empty param.error}">
+                Falha na autenticação. Verifique o usuário e a senha.
+            </div>
+            <div if="${not empty param.logout}" style="color:#1f3a5f;margin-top:8px;">
+                Sessão encerrada.
+            </div>
+        </div>
+    </vlayout>
+</zk>

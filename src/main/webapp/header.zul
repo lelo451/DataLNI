@@ -1,0 +1,22 @@
+<?page contentType="text/html;charset=UTF-8"?>
+<!--
+  Shared header strip: UEM symbol + brand text + signed-in user + logout. Included
+  from index.zul via <include src="/header.zul"/>. Owns its own MainVM binding so
+  callers don't need to wire it.
+-->
+<zk>
+    <hbox sclass="app-header" hflex="1" align="center" pack="start" spacing="12px"
+          apply="org.zkoss.bind.BindComposer"
+          viewModel="@id('vm') @init('com.lni.datalni.ui.MainVM')">
+        <image src="/img/uem-symbol.svg" height="40px"/>
+        <label sclass="app-title" value="DATA LNI"/>
+        <space hflex="1"/>
+        <label sclass="app-user" value="@load(vm.username)"/>
+        <space width="12px"/>
+        <!-- SecurityConfig allows GET /logout, so a plain ZK button suffices.
+             Direct Font Awesome class so the glyph renders independent of ZK's
+             z-icon-* alias map. -->
+        <button label="Sair" iconSclass="fas fa-sign-out-alt"
+                onClick='Executions.sendRedirect("/logout")'/>
+    </hbox>
+</zk>

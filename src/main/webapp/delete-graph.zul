@@ -1,0 +1,41 @@
+<?page title="Excluir gráfico"?>
+<zk>
+    <window title="Excluir gráfico" mode="modal" closable="true" width="560px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.lni.datalni.ui.DeleteGraphFormVM')">
+        <vlayout spacing="10px" hflex="1" style="padding:12px">
+            <label value="@load(vm.summary)" style="font-weight:600"/>
+            <label value="Os números associados precisam ser tratados antes da exclusão.
+                          Escolha uma das opções abaixo:" multiline="true"/>
+            <grid hflex="1">
+                <columns>
+                    <column width="180px"/>
+                    <column hflex="1"/>
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Mover números para:"/>
+                        <combobox readonly="true" buttonVisible="true" hflex="1"
+                                  model="@load(vm.targetOptions)"
+                                  selectedItem="@bind(vm.targetGraph)">
+                            <template name="model">
+                                <comboitem label="@load(vm.graphLabel(each))"/>
+                            </template>
+                        </combobox>
+                    </row>
+                </rows>
+            </grid>
+            <hbox pack="end" spacing="6px" hflex="1">
+                <button label="Cancelar" iconSclass="z-icon-times"
+                        onClick="@command('cancel')"/>
+                <button label="Excluir tudo (gráficos + números)"
+                        iconSclass="z-icon-trash"
+                        onClick="@command('deleteAll')"/>
+                <button label="Mover e excluir"
+                        iconSclass="z-icon-check"
+                        onClick="@command('moveAndDelete')"
+                        disabled="@load(empty vm.targetGraph)"/>
+            </hbox>
+        </vlayout>
+    </window>
+</zk>

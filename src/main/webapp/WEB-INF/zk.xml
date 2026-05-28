@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk>
+    <!-- ZK Theme -->
+    <library-property>
+        <name>org.zkoss.theme.preferred</name>
+        <value>iceblue_c</value>
+    </library-property>
+
+    <library-property>
+        <name>org.zkoss.web.preferred.locale</name>
+        <value>pt_BR</value>
+    </library-property>
+
+    <!-- Loading Position -->
+    <library-property>
+        <name>org.zkoss.zul.progressbox.position</name>
+        <value>center</value>
+    </library-property>
+
+    <library-property>
+        <name>org.zkoss.zk.ui.versionInfo.enabled</name>
+        <value>false</value>
+    </library-property>
+
+    <!-- Compress ZK client-side JavaScript -->
+    <library-property>
+        <name>org.zkoss.web.preferred.compress</name>
+        <value>true</value>
+    </library-property>
+</zk>

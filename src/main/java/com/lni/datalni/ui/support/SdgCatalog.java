@@ -1,5 +1,7 @@
 package com.lni.datalni.ui.support;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,24 +14,29 @@ public final class SdgCatalog {
     private SdgCatalog() {
     }
 
-    private static final Map<Integer, String> NAMES = Map.ofEntries(
-            Map.entry(1, "Erradicação da pobreza"),
-            Map.entry(2, "Fome zero e agricultura sustentável"),
-            Map.entry(3, "Saúde e bem-estar"),
-            Map.entry(4, "Educação de qualidade"),
-            Map.entry(5, "Igualdade de gênero"),
-            Map.entry(6, "Água potável e saneamento"),
-            Map.entry(7, "Energia limpa e acessível"),
-            Map.entry(8, "Trabalho decente e crescimento econômico"),
-            Map.entry(9, "Indústria, inovação e infraestrutura"),
-            Map.entry(10, "Redução das desigualdades"),
-            Map.entry(11, "Cidades e comunidades sustentáveis"),
-            Map.entry(12, "Consumo e produção responsáveis"),
-            Map.entry(13, "Ação contra a mudança global do clima"),
-            Map.entry(14, "Vida na água"),
-            Map.entry(15, "Vida terrestre"),
-            Map.entry(16, "Paz, justiça e instituições eficazes"),
-            Map.entry(17, "Parcerias e meios de implementação"));
+    private static final Map<Integer, String> NAMES;
+
+    static {
+        Map<Integer, String> m = new LinkedHashMap<>();
+        m.put(1, "Erradicação da pobreza");
+        m.put(2, "Fome zero e agricultura sustentável");
+        m.put(3, "Saúde e bem-estar");
+        m.put(4, "Educação de qualidade");
+        m.put(5, "Igualdade de gênero");
+        m.put(6, "Água potável e saneamento");
+        m.put(7, "Energia limpa e acessível");
+        m.put(8, "Trabalho decente e crescimento econômico");
+        m.put(9, "Indústria, inovação e infraestrutura");
+        m.put(10, "Redução das desigualdades");
+        m.put(11, "Cidades e comunidades sustentáveis");
+        m.put(12, "Consumo e produção responsáveis");
+        m.put(13, "Ação contra a mudança global do clima");
+        m.put(14, "Vida na água");
+        m.put(15, "Vida terrestre");
+        m.put(16, "Paz, justiça e instituições eficazes");
+        m.put(17, "Parcerias e meios de implementação");
+        NAMES = java.util.Collections.unmodifiableMap(m);
+    }
 
     /** e.g. {@code 3 -> "ODS 3 — Saúde e bem-estar"}; {@code null -> ""}. */
     public static String label(Integer ods) {
@@ -38,5 +45,10 @@ public final class SdgCatalog {
         }
         String name = NAMES.get(ods);
         return name == null ? "ODS " + ods : "ODS " + ods + " — " + name;
+    }
+
+    /** Ordered list of (id, label) pairs for combobox population. */
+    public static List<Integer> ids() {
+        return new java.util.ArrayList<>(NAMES.keySet());
     }
 }

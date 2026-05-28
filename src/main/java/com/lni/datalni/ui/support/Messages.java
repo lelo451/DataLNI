@@ -6,8 +6,7 @@ import java.util.ResourceBundle;
 
 /**
  * Looks up user-facing strings from the {@code i18n/messages} bundle for the current
- * default locale (pt-BR primary, English fallback). {@link ResourceBundle} caches the
- * lookups, and resolving per call keeps it correct regardless of class-load order.
+ * default locale (pt-BR primary, English fallback).
  */
 public final class Messages {
 

@@ -1,0 +1,105 @@
+/* App-specific tweaks on top of the Iceblue ZK theme. */
+
+/* ZK's borderlayout/vflex="1" needs a parent with an explicit height; without
+   this reset the body collapses to 0 and the content stacks on top of the
+   header instead of sitting beneath it. */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* Iceblue's base is ~13px; bump everything in the app a notch for readability. */
+    font-size: 15px;
+}
+
+/* ZK widgets pull their font from a wrapper class; nudge that too so labels,
+   listcells, buttons, etc. inherit the larger base instead of the theme default. */
+body .z-button, body .z-label, body .z-listcell, body .z-tab,
+body .z-textbox, body .z-intbox, body .z-decimalbox, body .z-datebox {
+    font-size: 14px;
+}
+
+.app-header {
+    background: linear-gradient(180deg, #f4f8fc, #e8eef5);
+    border-bottom: 1px solid #c9d6e3;
+    padding: 8px 16px;
+}
+
+.app-title {
+    color: #1f3a5f;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    /* Keep the brand text on a single line; the hbox cell would otherwise wrap it
+       if the iceblue theme's .z-label default permits line breaks. */
+    white-space: nowrap;
+}
+
+.app-user {
+    color: #1f3a5f;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.module-toolbar {
+    padding: 8px;
+    background: #f7faff;
+    border-bottom: 1px solid #d6e1ee;
+}
+
+.module-table {
+    margin-top: 4px;
+}
+
+/* Headers wired to onSort: cursor cue only. ZK doesn't draw a sort arrow when
+   we drive sort server-side via onClick — the table re-orders and that's the
+   user's feedback. */
+.sortable {
+    cursor: pointer;
+}
+
+.paging-bar {
+    padding: 6px 8px;
+    background: #f7faff;
+    border-top: 1px solid #d6e1ee;
+}
+
+/* Strip the Iceblue theme's default paging chrome so the widget blends into
+   the .paging-bar strip instead of stacking a second background. */
+.z-paging,
+.z-paging-info {
+    background: transparent;
+    border: none;
+}
+
+.detail-header {
+    padding: 6px 12px;
+    background: #eef5fb;
+    border-top: 1px solid #d6e1ee;
+    border-bottom: 1px solid #d6e1ee;
+    font-weight: 600;
+    color: #1f3a5f;
+}
+
+.login-page {
+    background: linear-gradient(135deg, #d9eaf5, #f4f8fc);
+}
+
+.login-card {
+    background: white;
+    border: 1px solid #c9d6e3;
+    border-radius: 6px;
+    box-shadow: 0 2px 14px rgba(31, 58, 95, 0.08);
+    padding: 32px;
+    width: 360px;
+}
+
+.login-brand {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.login-error {
+    color: #b32a2a;
+    margin-top: 8px;
+}

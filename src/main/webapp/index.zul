@@ -1,0 +1,30 @@
+<?page title="DATA LNI" contentType="text/html;charset=UTF-8"?>
+<?link rel="stylesheet" type="text/css" href="/css/app.css"?>
+<?link rel="stylesheet" type="text/css" href="/webjars/font-awesome/7.2.0/css/all.min.css"?>
+<zk>
+    <!-- Shell: navbar (north) + tabs (center). The navbar lives in header.zul so any
+         future standalone page can pull in the same strip. -->
+    <borderlayout hflex="1" vflex="1">
+        <north size="56px">
+            <include src="/header.zul"/>
+        </north>
+        <center>
+            <!-- onSelect fires a global command; every list VM has a matching
+                 @GlobalCommand("resetSelection") that drops its checked rows so
+                 returning to a tab doesn't carry stale selection across. -->
+            <tabbox hflex="1" vflex="1"
+                    onSelect='org.zkoss.bind.BindUtils.postGlobalCommand(null, null, "resetSelection", null)'>
+                <tabs>
+                    <tab label="Projetos" iconSclass="fas fa-folder"/>
+                    <tab label="Gráficos" iconSclass="fas fa-chart-bar"/>
+                    <tab label="Sustentabilidade" iconSclass="fas fa-leaf"/>
+                </tabs>
+                <tabpanels>
+                    <tabpanel><include src="/projects.zul"/></tabpanel>
+                    <tabpanel><include src="/graphs.zul"/></tabpanel>
+                    <tabpanel><include src="/sustainability.zul"/></tabpanel>
+                </tabpanels>
+            </tabbox>
+        </center>
+    </borderlayout>
+</zk>
