@@ -1,20 +1,38 @@
 package com.lni.datalni.security;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * CurrentUser is a thin read-only adapter over {@link SecurityContextHolder}; these
+ * tests prime the holder and observe the projection.
+ */
 class CurrentUserTest {
+
+    private final CurrentUser currentUser = new CurrentUser();
+
+    @AfterEach
+    void clear() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void authenticate(String username, String role) {
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                username, "x", List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
 
     @Test
     void exposesRolesWithoutPrefixAndEditCapability() {
-        CurrentUser currentUser = new CurrentUser();
-        currentUser.set(new UsernamePasswordAuthenticationToken("editor", "x",
-                List.of(new SimpleGrantedAuthority("ROLE_LNI_EDITOR"))));
+        authenticate("editor", SecurityRoles.EDITOR);
 
         assertThat(currentUser.isAuthenticated()).isTrue();
         assertThat(currentUser.getUsername()).isEqualTo("editor");
@@ -24,18 +42,15 @@ class CurrentUserTest {
 
     @Test
     void viewerCannotEdit() {
-        CurrentUser currentUser = new CurrentUser();
-        currentUser.set(new UsernamePasswordAuthenticationToken("viewer", "x",
-                List.of(new SimpleGrantedAuthority("ROLE_LNI_VIEWER"))));
+        authenticate("viewer", SecurityRoles.VIEWER);
 
         assertThat(currentUser.canEdit()).isFalse();
     }
 
     @Test
     void clearedUserIsNotAuthenticated() {
-        CurrentUser currentUser = new CurrentUser();
-        currentUser.set(new UsernamePasswordAuthenticationToken("a", "b", List.of()));
-        currentUser.clear();
+        authenticate("a", SecurityRoles.VIEWER);
+        SecurityContextHolder.clearContext();
 
         assertThat(currentUser.isAuthenticated()).isFalse();
         assertThat(currentUser.getRolesDisplay()).isEqualTo("-");

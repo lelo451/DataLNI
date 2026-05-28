@@ -1,16 +1,14 @@
 package com.lni.datalni.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 
@@ -33,14 +31,12 @@ public class Sustainability {
     @Column(name = "CD_SUSTENTABILIDADE")
     private Integer id;
 
-    // AN_ANO and TP_ODS are SMALLINT in PLD.LNI_SUSTENTABILIDADE (SPEC §5.4); keep the
-    // Java type Integer but map the JDBC type as SMALLINT so schema validation matches.
-    @Column(name = "AN_ANO")
-    @JdbcTypeCode(SqlTypes.SMALLINT)
+    // AN_ANO and TP_ODS are SMALLINT in PLD.LNI_SUSTENTABILIDADE (SPEC §5.4). On Hibernate 5.6
+    // INTEGER/SMALLINT mismatches usually pass `validate`; the columnDefinition pins DDL output.
+    @Column(name = "AN_ANO", columnDefinition = "SMALLINT")
     private Integer year;
 
-    @Column(name = "TP_ODS")
-    @JdbcTypeCode(SqlTypes.SMALLINT)
+    @Column(name = "TP_ODS", columnDefinition = "SMALLINT")
     private Integer ods;
 
     @Column(name = "DE_TITULO", length = 250)

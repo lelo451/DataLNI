@@ -2,7 +2,7 @@ package com.lni.datalni.repository.spec;
 
 import com.lni.datalni.domain.Graph;
 import com.lni.datalni.service.dto.GraphCriteria;
-import jakarta.persistence.criteria.Predicate;
+import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 

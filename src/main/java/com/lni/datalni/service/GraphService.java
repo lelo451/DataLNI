@@ -1,5 +1,6 @@
 package com.lni.datalni.service;
 
+import com.lni.datalni.domain.DataNumber;
 import com.lni.datalni.domain.Graph;
 import com.lni.datalni.exception.NotFoundException;
 import com.lni.datalni.repository.DataNumberRepository;
@@ -11,9 +12,10 @@ import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
 import com.lni.datalni.service.mapper.GraphMapper;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,11 +42,12 @@ public class GraphService {
     }
 
     public List<GraphDto> list() {
-        return graphMapper.toDtoList(graphRepository.findAll());
+        return graphMapper.toDtoList(graphRepository.findAll(Sort.by("id")));
     }
 
     public List<GraphDto> search(GraphCriteria criteria) {
-        return graphMapper.toDtoList(graphRepository.findAll(GraphSpecifications.matches(criteria)));
+        return graphMapper.toDtoList(graphRepository.findAll(
+                GraphSpecifications.matches(criteria), Sort.by("id")));
     }
 
     public Page<GraphDto> search(GraphCriteria criteria, Pageable pageable) {
@@ -58,7 +61,7 @@ public class GraphService {
 
     public List<DataNumberDto> listDataNumbers(Integer graphId) {
         return dataNumberMapper.toDtoList(
-                dataNumberRepository.findByGraphIdOrderByYearDescMonthDesc(graphId));
+                dataNumberRepository.findByGraphIdOrderById(graphId));
     }
 
     @Transactional
@@ -83,6 +86,33 @@ public class GraphService {
         if (!graphRepository.existsById(id)) {
             throw new NotFoundException("Graph", id);
         }
+        graphRepository.deleteById(id);
+    }
+
+    /** Cascade: drop every data number under the graph, then the graph itself. */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public void deleteWithNumbers(Integer id) {
+        if (!graphRepository.existsById(id)) {
+            throw new NotFoundException("Graph", id);
+        }
+        dataNumberRepository.deleteAll(dataNumberRepository.findByGraphId(id));
+        graphRepository.deleteById(id);
+    }
+
+    /** Re-parent every data number to {@code targetGraphId}, then delete the graph. */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public void deleteAfterMoveNumbers(Integer id, Integer targetGraphId) {
+        if (!graphRepository.existsById(id)) {
+            throw new NotFoundException("Graph", id);
+        }
+        if (!graphRepository.existsById(targetGraphId)) {
+            throw new NotFoundException("Graph", targetGraphId);
+        }
+        List<DataNumber> numbers = dataNumberRepository.findByGraphId(id);
+        numbers.forEach(n -> n.setGraphId(targetGraphId));
+        dataNumberRepository.saveAll(numbers);
         graphRepository.deleteById(id);
     }
 

@@ -3,8 +3,6 @@ package com.lni.datalni.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,8 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 /**
- * Development authentication: three in-memory users so role-based UI gating can be
- * exercised without Active Directory. Passwords equal the usernames.
+ * Dev-only in-memory authentication. Exposes a {@link DaoAuthenticationProvider} bean
+ * so {@link SecurityConfig} can pick it up via {@code @Autowired(required = false)} and
+ * fold it into the composite {@code AuthenticationManager}.
  *
  * <ul>
  *   <li>{@code admin}  / {@code admin}  &rarr; LNI_ADMIN  (full CRUD)</li>
@@ -32,21 +31,18 @@ public class DevSecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        return new InMemoryUserDetailsManager(
+    public DaoAuthenticationProvider inMemoryAuthenticationProvider(PasswordEncoder encoder) {
+        UserDetailsService users = new InMemoryUserDetailsManager(
                 User.withUsername("admin").password(encoder.encode("admin"))
                         .roles(SecurityRoles.ADMIN).build(),
                 User.withUsername("editor").password(encoder.encode("editor"))
                         .roles(SecurityRoles.EDITOR).build(),
                 User.withUsername("viewer").password(encoder.encode("viewer"))
                         .roles(SecurityRoles.VIEWER).build());
-    }
 
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
-                                                       PasswordEncoder encoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(users);
         provider.setPasswordEncoder(encoder);
-        return new ProviderManager(provider);
+        return provider;
     }
 }

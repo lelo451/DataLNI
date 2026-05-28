@@ -1,10 +1,10 @@
 package com.lni.datalni.service.dto;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,7 +25,7 @@ class ValidationMessagesTest {
             try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
                 Validator validator = factory.getValidator();
                 return validator.validate(GraphDto.builder().build()).stream()  // title is blank
-                        .map(jakarta.validation.ConstraintViolation::getMessage)
+                        .map(javax.validation.ConstraintViolation::getMessage)
                         .collect(Collectors.toSet());
             }
         } finally {
@@ -35,7 +35,7 @@ class ValidationMessagesTest {
 
     @Test
     void titleRequiredMessageIsPortugueseUnderPtBr() {
-        assertThat(messages(Locale.of("pt", "BR"))).contains("O título é obrigatório");
+        assertThat(messages(new Locale("pt", "BR"))).contains("O título é obrigatório");
     }
 
     @Test

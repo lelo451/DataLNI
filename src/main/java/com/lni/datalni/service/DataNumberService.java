@@ -6,7 +6,7 @@ import com.lni.datalni.repository.DataNumberRepository;
 import com.lni.datalni.security.SecurityRoles;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +30,7 @@ public class DataNumberService {
     }
 
     public List<DataNumberDto> listByGraph(Integer graphId) {
-        return mapper.toDtoList(repository.findByGraphIdOrderByYearDescMonthDesc(graphId));
+        return mapper.toDtoList(repository.findByGraphIdOrderById(graphId));
     }
 
     public Page<DataNumberDto> listByGraph(Integer graphId, Pageable pageable) {

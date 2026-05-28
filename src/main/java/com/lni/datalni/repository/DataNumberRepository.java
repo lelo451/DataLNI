@@ -18,4 +18,6 @@ public interface DataNumberRepository extends JpaRepository<DataNumber, Integer>
     List<DataNumber> findByGraphIdAndYear(Integer graphId, Integer year);
 
     List<DataNumber> findByGraphIdOrderByYearDescMonthDesc(Integer graphId);
+
+    List<DataNumber> findByGraphIdOrderById(Integer graphId);
 }

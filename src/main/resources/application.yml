@@ -11,10 +11,23 @@ spring:
     open-in-view: false
     properties:
       hibernate.default_schema: PLD
-      # The corporate DB2 is LUW 9.7, which lacks the "OFFSET ? ROWS FETCH FIRST ?"
-      # syntax that Hibernate 7's stock DB2Dialect always emits (SQLCODE -104). This
-      # custom dialect restores the legacy ROW_NUMBER()/FETCH FIRST pagination.
-      hibernate.dialect: com.lni.datalni.config.DB2v97Dialect
+      # Hibernate 5.6's stock DB2Dialect emits the legacy ROW_NUMBER()/FETCH FIRST
+      # pagination DB2 LUW 9.7 accepts — no custom subclass needed on this Hibernate
+      # line. Paged queries still need a stable ORDER BY (the views sort by id).
+      hibernate.dialect: org.hibernate.dialect.DB2Dialect
+
+server:
+  servlet:
+    # ZK auto-installs an HttpSessionListener; this keeps idle sessions cheap.
+    session:
+      timeout: 30m
+
+zk:
+  # Required for WAR packaging: gates ZkAutoConfiguration's DHtmlLayoutServlet
+  # registration for *.zul / *.zhtml. Without it Tomcat's default servlet serves
+  # .zul as a static download instead of routing to ZK.
+  springboot-packaging: war
+
 
 logging:
   level:

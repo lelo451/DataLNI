@@ -2,46 +2,45 @@ package com.lni.datalni.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Holds the authenticated principal for the desktop session. A single user is logged
- * in per JVM, so this singleton is the app-level view of {@code SecurityContextHolder}
- * and the source of truth the UI reads to gate controls.
+ * Read-only view of the authenticated principal for the current request thread.
+ * Reads from {@link SecurityContextHolder} on every call — Spring Security's session
+ * filter restores the {@code SecurityContext} per request, so multiple browser sessions
+ * see only their own user.
  */
 @Component
 public class CurrentUser {
 
-    private volatile Authentication authentication;
-
-    public void set(Authentication authentication) {
-        this.authentication = authentication;
-    }
-
-    public void clear() {
-        this.authentication = null;
+    private Authentication current() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
     public boolean isAuthenticated() {
-        return authentication != null && authentication.isAuthenticated();
+        Authentication auth = current();
+        return auth != null && auth.isAuthenticated()
+                && !"anonymousUser".equals(auth.getPrincipal());
     }
 
     public String getUsername() {
-        return authentication == null ? null : authentication.getName();
+        Authentication auth = current();
+        return auth == null ? null : auth.getName();
     }
 
     /** Application roles without the {@code ROLE_} prefix (e.g. {@code LNI_ADMIN}). */
     public Set<String> getRoles() {
-        if (authentication == null) {
+        Authentication auth = current();
+        if (auth == null) {
             return Collections.emptySet();
         }
-        return authentication.getAuthorities().stream()
+        return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
                 .filter(a -> a.startsWith("ROLE_"))
                 .map(a -> a.substring(5))
@@ -57,9 +56,12 @@ public class CurrentUser {
         return hasRole(SecurityRoles.ADMIN) || hasRole(SecurityRoles.EDITOR);
     }
 
-    /** Convenience for the status bar: roles joined for display. */
+    /** Convenience for the header strip: roles joined for display. */
     public String getRolesDisplay() {
-        List<String> roles = getRoles().stream().sorted().toList();
-        return roles.isEmpty() ? "-" : String.join(", ", roles);
+        Set<String> roles = getRoles();
+        if (roles.isEmpty()) {
+            return "-";
+        }
+        return roles.stream().sorted().collect(Collectors.joining(", "));
     }
 }

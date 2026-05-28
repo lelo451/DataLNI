@@ -8,9 +8,10 @@ import com.lni.datalni.security.SecurityRoles;
 import com.lni.datalni.service.dto.SustainabilityCriteria;
 import com.lni.datalni.service.dto.SustainabilityDto;
 import com.lni.datalni.service.mapper.SustainabilityMapper;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +33,12 @@ public class SustainabilityService {
     }
 
     public List<SustainabilityDto> list() {
-        return mapper.toDtoList(repository.findAll());
+        return mapper.toDtoList(repository.findAll(Sort.by("id")));
     }
 
     public List<SustainabilityDto> search(SustainabilityCriteria criteria) {
-        return mapper.toDtoList(repository.findAll(SustainabilitySpecifications.matches(criteria)));
+        return mapper.toDtoList(repository.findAll(
+                SustainabilitySpecifications.matches(criteria), Sort.by("id")));
     }
 
     public Page<SustainabilityDto> search(SustainabilityCriteria criteria, Pageable pageable) {
