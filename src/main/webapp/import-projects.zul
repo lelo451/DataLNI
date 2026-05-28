@@ -1,0 +1,77 @@
+<?page title="Importar projetos"?>
+<zk>
+    <window id="importWindow" title="Importar projetos" mode="modal" closable="true"
+            width="720px" height="520px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('com.lni.datalni.ui.imports.ProjectImportVM')">
+        <vlayout hflex="1" vflex="1" spacing="8px" style="padding:12px">
+            <hbox align="center" spacing="6px" hflex="1">
+                <button label="Selecionar arquivo (.csv .json .xlsx)"
+                        iconSclass="fas fa-upload"
+                        upload="true"
+                        onUpload="@command('onUpload', media=event.media)"/>
+                <label value="@load(vm.parsedFile.fileName)"
+                       style="font-style:italic;color:#4a5b6e"/>
+                <space hflex="1"/>
+                <label value="@load(vm.summary)"/>
+            </hbox>
+            <tabbox vflex="1" hflex="1" disabled="@load(not vm.fileLoaded)">
+                <tabs>
+                    <tab label="Mapeamento"/>
+                    <tab label="@load('Falhas ('.concat(vm.failures.size()).concat(')'))"/>
+                </tabs>
+                <tabpanels>
+                    <tabpanel>
+                        <vlayout hflex="1" vflex="1" spacing="6px">
+                            <label value="Vincule as colunas do arquivo aos campos de destino:"
+                                   style="font-weight:600"/>
+                            <grid hflex="1" vflex="1" model="@load(vm.fieldSpecs)">
+                                <columns>
+                                    <column label="Campo" width="220px"/>
+                                    <column label="Coluna do arquivo" hflex="1"/>
+                                </columns>
+                                <template name="model" var="spec">
+                                    <row>
+                                        <label value="@load(spec.label.concat(spec.required ? ' *' : ''))"/>
+                                        <combobox readonly="true" buttonVisible="true" hflex="1"
+                                                  model="@load(vm.headerOptions)"
+                                                  selectedItem="@bind(vm.mapping[spec.fieldName])">
+                                            <!-- Inner template so ZK doesn't walk up and pick the
+                                                 grid's <row> template, which would crash with
+                                                 "Unsupported child for Combobox: <Row null>". -->
+                                            <template name="model">
+                                                <comboitem label="@load(each)"/>
+                                            </template>
+                                        </combobox>
+                                    </row>
+                                </template>
+                            </grid>
+                        </vlayout>
+                    </tabpanel>
+                    <tabpanel>
+                        <listbox hflex="1" vflex="1"
+                                 model="@load(vm.failures)"
+                                 emptyMessage="Nenhuma falha">
+                            <listhead>
+                                <listheader label="Linha" width="100px"/>
+                                <listheader label="Erro" hflex="1"/>
+                            </listhead>
+                            <template name="model">
+                                <listitem>
+                                    <listcell label="@load(each.row)"/>
+                                    <listcell label="@load(each.message)"/>
+                                </listitem>
+                            </template>
+                        </listbox>
+                    </tabpanel>
+                </tabpanels>
+            </tabbox>
+            <hbox pack="end" spacing="6px" hflex="1">
+                <button label="Fechar" iconSclass="fas fa-times" onClick="@command('close')"/>
+                <button label="Importar" iconSclass="fas fa-check"
+                        onClick="@command('runImport')"
+                        disabled="@load(not vm.fileLoaded)"/>
+            </hbox>
+        </vlayout>
+    </window>
+</zk>
