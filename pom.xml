@@ -7,53 +7,88 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>2.7.18</version>
         <relativePath/>
     </parent>
 
     <groupId>com.lni</groupId>
     <artifactId>datalni</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>DATA LNI</name>
-    <description>Desktop CRUD application for PLD data on DB2 (Spring Boot + JavaFX)</description>
+    <description>Web CRUD application for PLD data on DB2 (Spring Boot + ZK)</description>
 
     <properties>
-        <java.version>21</java.version>
-        <javafx.version>21.0.5</javafx.version>
-        <atlantafx.version>2.0.1</atlantafx.version>
-        <ikonli.version>12.4.0</ikonli.version>
-        <jsvg.version>2.1.0</jsvg.version>
+        <java.version>11</java.version>
+        <zkspringboot.version>2.7.7</zkspringboot.version>
         <db2.jcc.version>11.5.9.0</db2.jcc.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
+        <!-- MapStruct 1.5.x is the last line compatible with Java 8/11. -->
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
-        <jpackage-maven-plugin.version>1.7.4</jpackage-maven-plugin.version>
-        <main.class>com.lni.datalni.Launcher</main.class>
-        <!-- JavaFX native classifier + jpackage icon; overridden per-OS by the profiles below. -->
-        <javafx.platform>linux</javafx.platform>
-        <app.icon>src/packaging/icon.png</app.icon>
-        <!-- jpackage requires a numeric version (no -SNAPSHOT). -->
-        <app.version>1.0.0</app.version>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>1.20.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <repositories>
+        <repository>
+            <id>ZK CE</id>
+            <name>ZK CE Repository</name>
+            <url>https://mavensync.zkoss.org/maven2</url>
+        </repository>
+    </repositories>
 
     <dependencies>
-        <!-- Spring core (no web server) -->
+        <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- Embedded Tomcat is 'provided' so the WAR can be dropped into an external
+             Tomcat / WebSphere. Spring Boot Maven plugin still puts it on the classpath
+             for `mvn spring-boot:run` during development. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ZK Spring Boot starter (BOM) + autoconfig + Spring bridge (zkplus) + theme. -->
+        <dependency>
+            <groupId>org.zkoss.zkspringboot</groupId>
+            <artifactId>zkspringboot-starter</artifactId>
+            <version>${zkspringboot.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.zkoss.zkspringboot</groupId>
+            <artifactId>zkspringboot-autoconfig</artifactId>
+            <version>${zkspringboot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkplus</artifactId>
+            <version>9.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.zkoss.theme</groupId>
+            <artifactId>iceblue_c</artifactId>
+            <version>9.6.0</version>
+        </dependency>
+
+        <!-- Spring Security + LDAP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+        </dependency>
+
+        <!-- JPA + validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -63,58 +98,24 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Security + LDAP/AD authentication -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-ldap</artifactId>
-        </dependency>
-
-        <!-- JavaFX (base artifacts carry bytecode for compile; natives resolved at run) -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-
-        <!-- AtlantaFX theme pack -->
-        <dependency>
-            <groupId>io.github.mkpaz</groupId>
-            <artifactId>atlantafx-base</artifactId>
-            <version>${atlantafx.version}</version>
-        </dependency>
-
-        <!-- jsvg: render SVG icons to images for JavaFX -->
-        <dependency>
-            <groupId>com.github.weisj</groupId>
-            <artifactId>jsvg</artifactId>
-            <version>${jsvg.version}</version>
-        </dependency>
-
-        <!-- Ikonli: Font Awesome 6 icons for JavaFX -->
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-javafx</artifactId>
-            <version>${ikonli.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-fontawesome6-pack</artifactId>
-            <version>${ikonli.version}</version>
-        </dependency>
-
-        <!-- CSV parsing for import (JSON uses the bundled jackson-databind). -->
+        <!-- CSV import (JSON uses Boot's bundled jackson-databind, XLSX uses POI). -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
+        <!-- Font Awesome via webjar: ZK's iconSclass="fas fa-..." needs this stylesheet
+             on the page (the iceblue_c theme doesn't ship its own FA bundle). Served by
+             Spring Boot's default webjars handler at /webjars/font-awesome/. -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>font-awesome</artifactId>
+            <version>7.2.0</version>
         </dependency>
 
         <!-- DB2 JDBC driver (IBM Data Server Driver - JCC) -->
@@ -125,21 +126,19 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok: getters/setters/constructors at compile time -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- MapStruct: compile-time entity <-> DTO mappers -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- Test -->
+        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -150,36 +149,9 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Boot 4 modularised test slices: @DataJpaTest / @AutoConfigureTestDatabase -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-data-jpa-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-jdbc-test</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Optional: Testcontainers DB2 integration tests (opt-in profile) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>db2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -218,186 +190,18 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Launcher is NOT a JavaFX Application subclass: required so the
-                         fat jar starts without "JavaFX runtime components are missing". -->
-                    <mainClass>${main.class}</mainClass>
-                </configuration>
             </plugin>
 
-            <!-- `mvn javafx:run` for development: resolves platform-specific JavaFX natives. -->
             <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>${javafx-maven-plugin.version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <mainClass>${main.class}</mainClass>
+                    <!-- No web.xml: ZK is auto-registered by zkspringboot and Spring Security
+                         filter chain is registered programmatically. -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
-    <profiles>
-        <!-- Heavy DB2 Testcontainers integration tests are skipped unless -Pit is passed. -->
-        <profile>
-            <id>it</id>
-            <properties>
-                <skip.it.tests>false</skip.it.tests>
-            </properties>
-        </profile>
-
-        <!-- Detect the JavaFX native classifier for the current OS/arch. -->
-        <profile>
-            <id>jfx-linux</id>
-            <activation><os><family>unix</family><name>Linux</name></os></activation>
-            <properties>
-                <javafx.platform>linux</javafx.platform>
-                <app.icon>src/packaging/icon.png</app.icon>
-            </properties>
-        </profile>
-        <profile>
-            <id>jfx-windows</id>
-            <activation><os><family>windows</family></os></activation>
-            <properties>
-                <javafx.platform>win</javafx.platform>
-                <app.icon>src/packaging/icon.ico</app.icon>
-            </properties>
-        </profile>
-        <profile>
-            <id>jfx-mac-x64</id>
-            <activation><os><family>mac</family><arch>x86_64</arch></os></activation>
-            <properties>
-                <javafx.platform>mac</javafx.platform>
-                <app.icon>src/packaging/icon.icns</app.icon>
-            </properties>
-        </profile>
-        <profile>
-            <id>jfx-mac-aarch64</id>
-            <activation><os><family>mac</family><arch>aarch64</arch></os></activation>
-            <properties>
-                <javafx.platform>mac-aarch64</javafx.platform>
-                <app.icon>src/packaging/icon.icns</app.icon>
-            </properties>
-        </profile>
-
-        <!--
-          Native installer/app-image via jpackage:
-            mvn -Pjpackage -DskipTests package
-          Produces target/dist/. Default type is app-image (no extra OS tooling);
-          override with -Djpackage.type=DEB|RPM|MSI|EXE|PKG|DMG (needs the platform's
-          packaging tools). Skips the Spring Boot fat jar and instead lays the thin app
-          jar + all dependencies (incl. the JavaFX ${javafx.platform} natives) flat in
-          an input dir so jpackage puts them on the classpath; Launcher is the entry point.
-        -->
-        <profile>
-            <id>jpackage</id>
-            <properties>
-                <jpackage.type>APP_IMAGE</jpackage.type>
-                <!-- Spring profile baked into the bundle; override with -Dapp.profile=dev. -->
-                <app.profile>prod</app.profile>
-                <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-                <jpackage.input>${project.build.directory}/jpackage/input</jpackage.input>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-runtime-deps</id>
-                                <phase>package</phase>
-                                <goals><goal>copy-dependencies</goal></goals>
-                                <configuration>
-                                    <includeScope>runtime</includeScope>
-                                    <outputDirectory>${jpackage.input}</outputDirectory>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-javafx-natives</id>
-                                <phase>package</phase>
-                                <goals><goal>copy</goal></goals>
-                                <configuration>
-                                    <outputDirectory>${jpackage.input}</outputDirectory>
-                                    <stripVersion>false</stripVersion>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.openjfx</groupId>
-                                            <artifactId>javafx-base</artifactId>
-                                            <version>${javafx.version}</version>
-                                            <classifier>${javafx.platform}</classifier>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.openjfx</groupId>
-                                            <artifactId>javafx-graphics</artifactId>
-                                            <version>${javafx.version}</version>
-                                            <classifier>${javafx.platform}</classifier>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.openjfx</groupId>
-                                            <artifactId>javafx-controls</artifactId>
-                                            <version>${javafx.version}</version>
-                                            <classifier>${javafx.platform}</classifier>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.openjfx</groupId>
-                                            <artifactId>javafx-fxml</artifactId>
-                                            <version>${javafx.version}</version>
-                                            <classifier>${javafx.platform}</classifier>
-                                        </artifactItem>
-                                    </artifactItems>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- Place the thin app jar alongside the dependencies in the input dir. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-app-jar</id>
-                                <phase>package</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                              todir="${jpackage.input}"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.panteleyev</groupId>
-                        <artifactId>jpackage-maven-plugin</artifactId>
-                        <version>${jpackage-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>build-image</id>
-                                <phase>package</phase>
-                                <goals><goal>jpackage</goal></goals>
-                                <configuration>
-                                    <type>${jpackage.type}</type>
-                                    <name>DATALNI</name>
-                                    <appVersion>${app.version}</appVersion>
-                                    <vendor>UEM - LNI</vendor>
-                                    <input>${jpackage.input}</input>
-                                    <destination>${project.build.directory}/dist</destination>
-                                    <mainJar>${project.build.finalName}.jar</mainJar>
-                                    <mainClass>${main.class}</mainClass>
-                                    <icon>${app.icon}</icon>
-                                    <javaOptions>
-                                        <option>-Dspring.profiles.active=${app.profile}</option>
-                                    </javaOptions>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
