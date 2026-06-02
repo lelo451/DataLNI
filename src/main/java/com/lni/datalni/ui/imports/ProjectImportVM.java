@@ -34,7 +34,7 @@ public class ProjectImportVM extends BaseImportVM {
                 .eprotocol((String) values.get("eprotocol"))
                 .coordinator((String) values.get("coordinator"))
                 .build();
-        projectService.create(dto);
+        projectService.importUpsert(dto);
     }
 
     @Override

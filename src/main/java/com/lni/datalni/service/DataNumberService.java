@@ -53,6 +53,25 @@ public class DataNumberService {
         return mapper.toDto(repository.save(entity));
     }
 
+    /**
+     * Import upsert: updates the data number matching the DTO's graph + year + class if
+     * one exists, otherwise inserts a new row.
+     */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public DataNumberDto importUpsert(@Valid DataNumberDto dto) {
+        DataNumber existing = repository
+                .findForImport(dto.getGraphId(), dto.getYear(), dto.getClazz())
+                .stream().findFirst().orElse(null);
+        if (existing == null) {
+            DataNumber entity = mapper.toEntity(dto);
+            entity.setId(null);
+            return mapper.toDto(repository.save(entity));
+        }
+        mapper.updateEntity(dto, existing);
+        return mapper.toDto(repository.save(existing));
+    }
+
     @Transactional
     @PreAuthorize(SecurityRoles.CAN_EDIT)
     public DataNumberDto update(@Valid DataNumberDto dto) {

@@ -45,7 +45,7 @@ public class SustainabilityImportVM extends BaseImportVM {
                 // Year is derived from the publication date, mirroring the form behaviour.
                 .year(published == null ? null : published.getYear())
                 .build();
-        sustainabilityService.create(dto);
+        sustainabilityService.importUpsert(dto);
     }
 
     @Override

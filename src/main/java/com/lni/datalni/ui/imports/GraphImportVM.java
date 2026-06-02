@@ -29,7 +29,7 @@ public class GraphImportVM extends BaseImportVM {
                 .title((String) values.get("title"))
                 .description((String) values.get("description"))
                 .build();
-        graphService.create(dto);
+        graphService.importUpsert(dto);
     }
 
     @Override

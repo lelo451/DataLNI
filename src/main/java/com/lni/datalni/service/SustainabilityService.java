@@ -58,6 +58,25 @@ public class SustainabilityService {
         return mapper.toDto(repository.save(entity));
     }
 
+    /**
+     * Import upsert: updates the publication matching the DTO's year + title if one
+     * exists, otherwise inserts a new row.
+     */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public SustainabilityDto importUpsert(@Valid SustainabilityDto dto) {
+        Sustainability existing = repository
+                .findForImport(dto.getYear(), dto.getTitle())
+                .stream().findFirst().orElse(null);
+        if (existing == null) {
+            Sustainability entity = mapper.toEntity(dto);
+            entity.setId(null);
+            return mapper.toDto(repository.save(entity));
+        }
+        mapper.updateEntity(dto, existing);
+        return mapper.toDto(repository.save(existing));
+    }
+
     @Transactional
     @PreAuthorize(SecurityRoles.CAN_EDIT)
     public SustainabilityDto update(@Valid SustainabilityDto dto) {

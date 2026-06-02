@@ -72,6 +72,24 @@ public class GraphService {
         return graphMapper.toDto(graphRepository.save(entity));
     }
 
+    /**
+     * Import upsert: updates the graph matching the DTO's title if one exists,
+     * otherwise inserts a new row.
+     */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public GraphDto importUpsert(@Valid GraphDto dto) {
+        Graph existing = graphRepository.findByTitle(dto.getTitle())
+                .stream().findFirst().orElse(null);
+        if (existing == null) {
+            Graph entity = graphMapper.toEntity(dto);
+            entity.setId(null);
+            return graphMapper.toDto(graphRepository.save(entity));
+        }
+        graphMapper.updateEntity(dto, existing);
+        return graphMapper.toDto(graphRepository.save(existing));
+    }
+
     @Transactional
     @PreAuthorize(SecurityRoles.CAN_EDIT)
     public GraphDto update(@Valid GraphDto dto) {

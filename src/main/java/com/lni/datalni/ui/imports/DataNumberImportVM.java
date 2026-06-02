@@ -38,7 +38,7 @@ public class DataNumberImportVM extends BaseImportVM {
                 .value((BigDecimal) values.get("value"))
                 .clazz((String) values.get("clazz"))
                 .build();
-        dataNumberService.create(dto);
+        dataNumberService.importUpsert(dto);
     }
 
     @Override

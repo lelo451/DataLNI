@@ -62,6 +62,26 @@ public class ProjectService {
         return mapper.toDto(repository.save(entity));
     }
 
+    /**
+     * Import upsert: updates the project matching the DTO's e-protocol if one exists,
+     * otherwise inserts a new row. A blank e-protocol has nothing to match on, so it
+     * always inserts (avoids collapsing every protocol-less project into one).
+     */
+    @Transactional
+    @PreAuthorize(SecurityRoles.CAN_EDIT)
+    public ProjectDto importUpsert(@Valid ProjectDto dto) {
+        Project existing = dto.getEprotocol() == null || dto.getEprotocol().isBlank()
+                ? null
+                : repository.findByEprotocol(dto.getEprotocol()).stream().findFirst().orElse(null);
+        if (existing == null) {
+            Project entity = mapper.toEntity(dto);
+            entity.setId(null);
+            return mapper.toDto(repository.save(entity));
+        }
+        mapper.updateEntity(dto, existing);
+        return mapper.toDto(repository.save(existing));
+    }
+
     @Transactional
     @PreAuthorize(SecurityRoles.CAN_EDIT)
     public ProjectDto update(@Valid ProjectDto dto) {
