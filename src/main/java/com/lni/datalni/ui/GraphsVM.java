@@ -6,6 +6,7 @@ import com.lni.datalni.service.GraphService;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
+import com.lni.datalni.ui.support.DataNumberCsv;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.Messages;
@@ -28,6 +29,7 @@ import org.zkoss.zk.ui.event.SelectEvent;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
@@ -205,6 +207,23 @@ public class GraphsVM {
     }
 
     // -- DataNumber (detail) CRUD --------------------------------------------
+
+    @Command
+    public void doExportNumbers() {
+        if (selected == null || dataNumbers.isEmpty()) {
+            return;
+        }
+        try {
+            String titulo = StringUtils.hasText(selected.getTitle())
+                    ? selected.getTitle().replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "-")
+                    : selected.getId().toString();
+            Filedownload.save(DataNumberCsv.write(dataNumbers), "text/csv;charset=UTF-8",
+                    "numeros-" + titulo + ".csv");
+        } catch (Exception ex) {
+            Messagebox.show(ErrorTranslator.translate(ex),
+                    Messages.get("dialog.error.title"), Messagebox.OK, Messagebox.ERROR);
+        }
+    }
 
     @Command
     public void doNewNumber() {

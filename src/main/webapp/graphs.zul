@@ -83,6 +83,9 @@
                     <button label="Importar" iconSclass="fas fa-file-import"
                             onClick='Executions.createComponents("/import-datanumbers.zul", null, null)'
                             visible="@load(vm.canEdit)"/>
+                    <button label="Exportar" iconSclass="fas fa-file-export"
+                            onClick="@command('doExportNumbers')"
+                            disabled="@load(empty vm.selected or empty vm.dataNumbers)"/>
                 </hlayout>
 
                 <listbox sclass="module-table" hflex="1" vflex="2"
