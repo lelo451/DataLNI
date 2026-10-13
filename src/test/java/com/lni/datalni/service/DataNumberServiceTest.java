@@ -11,9 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,6 +31,24 @@ class DataNumberServiceTest {
     @Mock private DataNumberMapper dataNumberMapper;
 
     @InjectMocks private DataNumberService dataNumberService;
+
+    @Test
+    void update_clearedMonth_savesNullInsteadOfKeepingPreviousMonth() {
+        DataNumberDto dadosNumero = DataNumberDto.builder().id(7).month(null).build();
+        DataNumber numero = new DataNumber();
+        numero.setId(7);
+        numero.setMonth(5);
+        when(dataNumberRepository.findById(7)).thenReturn(Optional.of(numero));
+        when(dataNumberRepository.save(numero)).thenReturn(numero);
+        DataNumberService servicoDataNumber = new DataNumberService(dataNumberRepository,
+                Mappers.getMapper(DataNumberMapper.class), graphRepository);
+
+        DataNumberDto dadosSalvos = servicoDataNumber.update(dadosNumero);
+
+        assertThat(numero.getMonth()).isNull();
+        assertThat(dadosSalvos.getMonth()).isNull();
+        verify(dataNumberRepository).save(numero);
+    }
 
     @Test
     void importUpsert_missingGraph_throwsBeforeLookingUpOrSavingDataNumbers() {

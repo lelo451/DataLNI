@@ -15,6 +15,7 @@ import org.zkoss.bind.annotation.ContextParam;
 import org.zkoss.bind.annotation.ContextType;
 import org.zkoss.bind.annotation.ExecutionArgParam;
 import org.zkoss.bind.annotation.Init;
+import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
@@ -93,6 +94,12 @@ public class DataNumberFormVM {
         return dto.getId() == null
                 ? Messages.get("datanumber.form.new.title")
                 : Messages.get("datanumber.form.edit.title");
+    }
+
+    @Command
+    @NotifyChange("dto")
+    public void clearMonth() {
+        dto.setMonth(null);
     }
 
     @Command

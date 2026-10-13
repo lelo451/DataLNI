@@ -24,13 +24,17 @@
                     </row>
                     <row>
                         <label value="Mês"/>
-                        <combobox readonly="true" buttonVisible="true" width="220px"
-                                  model="@load(vm.monthOptions)"
-                                  selectedItem="@bind(vm.dto.month)">
-                            <template name="model">
-                                <comboitem label="@load(vm.monthLabel(each))"/>
-                            </template>
-                        </combobox>
+                        <hlayout spacing="6px" valign="middle">
+                            <combobox readonly="true" buttonVisible="true" width="220px"
+                                      model="@load(vm.monthOptions)"
+                                      selectedItem="@bind(vm.dto.month)">
+                                <template name="model">
+                                    <comboitem label="@load(vm.monthLabel(each))"/>
+                                </template>
+                            </combobox>
+                            <button iconSclass="z-icon-times" tooltiptext="Limpar mês"
+                                    onClick="@command('clearMonth')"/>
+                        </hlayout>
                     </row>
                     <row>
                         <label value="Ano *"/>

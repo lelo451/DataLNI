@@ -84,6 +84,7 @@ public class DataNumberService {
     public DataNumberDto update(@Valid DataNumberDto dto) {
         DataNumber entity = find(dto.getId());
         mapper.updateEntity(dto, entity);
+        entity.setMonth(dto.getMonth());
         return mapper.toDto(repository.save(entity));
     }
 
