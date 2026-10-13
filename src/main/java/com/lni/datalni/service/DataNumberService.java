@@ -3,6 +3,7 @@ package com.lni.datalni.service;
 import com.lni.datalni.domain.DataNumber;
 import com.lni.datalni.exception.NotFoundException;
 import com.lni.datalni.repository.DataNumberRepository;
+import com.lni.datalni.repository.GraphRepository;
 import com.lni.datalni.security.SecurityRoles;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.mapper.DataNumberMapper;
@@ -23,10 +24,13 @@ public class DataNumberService {
 
     private final DataNumberRepository repository;
     private final DataNumberMapper mapper;
+    private final GraphRepository graphRepository;
 
-    public DataNumberService(DataNumberRepository repository, DataNumberMapper mapper) {
+    public DataNumberService(DataNumberRepository repository, DataNumberMapper mapper,
+                             GraphRepository graphRepository) {
         this.repository = repository;
         this.mapper = mapper;
+        this.graphRepository = graphRepository;
     }
 
     public List<DataNumberDto> listByGraph(Integer graphId) {
@@ -60,6 +64,9 @@ public class DataNumberService {
     @Transactional
     @PreAuthorize(SecurityRoles.CAN_EDIT)
     public DataNumberDto importUpsert(@Valid DataNumberDto dto) {
+        if (!graphRepository.existsById(dto.getGraphId())) {
+            throw new NotFoundException("Graph", dto.getGraphId());
+        }
         DataNumber existing = repository
                 .findForImport(dto.getGraphId(), dto.getYear(), dto.getClazz())
                 .stream().findFirst().orElse(null);
