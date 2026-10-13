@@ -6,7 +6,7 @@ import com.lni.datalni.service.GraphService;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.dto.GraphCriteria;
 import com.lni.datalni.service.dto.GraphDto;
-import com.lni.datalni.ui.support.DataNumberCsv;
+import com.lni.datalni.ui.support.DataNumberXlsx;
 import com.lni.datalni.ui.support.ErrorTranslator;
 import com.lni.datalni.ui.support.Formats;
 import com.lni.datalni.ui.support.Messages;
@@ -217,8 +217,9 @@ public class GraphsVM {
             String titulo = StringUtils.hasText(selected.getTitle())
                     ? selected.getTitle().replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "-")
                     : selected.getId().toString();
-            Filedownload.save(DataNumberCsv.write(dataNumbers), "text/csv;charset=UTF-8",
-                    "numeros-" + titulo + ".csv");
+            Filedownload.save(DataNumberXlsx.write(dataNumbers),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "numeros-" + titulo + ".xlsx");
         } catch (Exception ex) {
             Messagebox.show(ErrorTranslator.translate(ex),
                     Messages.get("dialog.error.title"), Messagebox.OK, Messagebox.ERROR);
