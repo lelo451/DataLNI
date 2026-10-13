@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -57,6 +60,22 @@ class MappingSliceTest {
         assertThat(number.getValue()).isEqualByComparingTo(new BigDecimal("1234.56"));
         assertThat(number.getGraphId()).isEqualTo(1);
         assertThat(number.getClazz()).isEqualTo("classe");
+    }
+
+    @Test
+    void pagedNumbers_filterGraphAndSortAcrossPagesWithCorrectTotal() {
+        Sort ordenacao = Sort.by("year").ascending().and(Sort.by("id"));
+        Page<DataNumber> primeiraPagina = dataNumberRepository.findByGraphId(1,
+                PageRequest.of(0, 1, ordenacao));
+        Page<DataNumber> segundaPagina = dataNumberRepository.findByGraphId(1,
+                PageRequest.of(1, 1, ordenacao));
+
+        assertThat(primeiraPagina.getTotalElements()).isEqualTo(2);
+        assertThat(segundaPagina.getTotalElements()).isEqualTo(2);
+        assertThat(primeiraPagina.getContent()).extracting(DataNumber::getId).containsExactly(11);
+        assertThat(segundaPagina.getContent()).extracting(DataNumber::getId).containsExactly(10);
+        assertThat(dataNumberRepository.findByGraphId(42, PageRequest.of(0, 1, ordenacao)))
+                .isEmpty();
     }
 
     @Test

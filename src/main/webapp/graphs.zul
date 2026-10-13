@@ -94,15 +94,17 @@
                          selectedItem="@bind(vm.selectedNumber)"
                          selectedItems="@bind(vm.selectedNumbers)"
                          emptyMessage="Sem números">
-                    <!-- DataNumbers detail list is loaded eagerly (small per-graph set),
-                         so client-side sort via sort="auto(field)" is enough — no need
-                         to round-trip to the server. -->
                     <listhead sizable="true">
-                        <listheader label="#" width="80px" sort="auto(id)"/>
-                        <listheader label="Mês" width="80px" sort="auto(month)"/>
-                        <listheader label="Ano" width="100px" sort="auto(year)"/>
-                        <listheader label="Valor" width="140px" sort="auto(value)"/>
-                        <listheader label="Classe" hflex="1" sort="auto(clazz)"/>
+                        <listheader label="#" width="80px" sclass="sortable"
+                                    onClick="@command('onSortNumber', column='id')"/>
+                        <listheader label="Mês" width="80px" sclass="sortable"
+                                    onClick="@command('onSortNumber', column='month')"/>
+                        <listheader label="Ano" width="100px" sclass="sortable"
+                                    onClick="@command('onSortNumber', column='year')"/>
+                        <listheader label="Valor" width="140px" sclass="sortable"
+                                    onClick="@command('onSortNumber', column='value')"/>
+                        <listheader label="Classe" hflex="1" sclass="sortable"
+                                    onClick="@command('onSortNumber', column='clazz')"/>
                     </listhead>
                     <template name="model">
                         <listitem>
@@ -114,6 +116,19 @@
                         </listitem>
                     </template>
                 </listbox>
+                <hbox align="center" pack="start" spacing="8px" hflex="1" sclass="paging-bar">
+                    <paging activePage="@bind(vm.paginaAtivaNumeros)"
+                            totalSize="@load(vm.totalNumeros)"
+                            pageSize="@load(vm.tamanhoPaginaNumeros)"
+                            detailed="true" width="100%"
+                            onPaging="@command('onPageNumbers')"/>
+                    <space hflex="1"/>
+                    <label value="@load(vm.itemsPerPageLabel)"/>
+                    <listbox mold="select" width="90px"
+                             model="@load(vm.pageSizeOptions)"
+                             selectedItem="@bind(vm.tamanhoPaginaNumeros)"
+                             onSelect="@command('onChangeNumberPageSize')"/>
+                </hbox>
             </vlayout>
         </center>
     </borderlayout>

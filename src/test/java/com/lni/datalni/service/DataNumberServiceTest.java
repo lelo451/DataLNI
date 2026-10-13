@@ -12,6 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mapstruct.factory.Mappers;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,6 +35,25 @@ class DataNumberServiceTest {
     @Mock private DataNumberMapper dataNumberMapper;
 
     @InjectMocks private DataNumberService dataNumberService;
+
+    @Test
+    void listByGraph_paged_preservesDatabaseTotalAndMapsOnlyPageContent() {
+        PageRequest paginacao = PageRequest.of(1, 50, Sort.by("year").and(Sort.by("id")));
+        DataNumber numero = new DataNumber();
+        numero.setId(51);
+        numero.setGraphId(42);
+        DataNumberDto dadosNumero = DataNumberDto.builder().id(51).graphId(42).build();
+        when(dataNumberRepository.findByGraphId(42, paginacao))
+                .thenReturn(new PageImpl<>(List.of(numero), paginacao, 123));
+        when(dataNumberMapper.toDto(numero)).thenReturn(dadosNumero);
+
+        Page<DataNumberDto> pagina = dataNumberService.listByGraph(42, paginacao);
+
+        assertThat(pagina.getContent()).containsExactly(dadosNumero);
+        assertThat(pagina.getTotalElements()).isEqualTo(123);
+        assertThat(pagina.getNumber()).isEqualTo(1);
+        verify(dataNumberRepository).findByGraphId(42, paginacao);
+    }
 
     @Test
     void update_clearedMonth_savesNullInsteadOfKeepingPreviousMonth() {

@@ -1,5 +1,6 @@
 package com.lni.datalni.ui;
 
+import com.lni.datalni.service.DataNumberService;
 import com.lni.datalni.service.dto.DataNumberDto;
 import com.lni.datalni.service.dto.GraphDto;
 import com.lni.datalni.ui.imports.ParsedFile;
@@ -22,6 +23,7 @@ import org.zkoss.zk.ui.sys.WebAppCtrl;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,6 +58,11 @@ class GraphsVMExportTest {
                 .value(BigDecimal.ONE).build();
         pagina.setSelected(grafico);
         pagina.getDataNumbers().add(numero);
+        DataNumberDto numeroOutraPagina = DataNumberDto.builder().graphId(42).year(2025)
+                .value(BigDecimal.TEN).build();
+        DataNumberService servicoDataNumber = mock(DataNumberService.class);
+        pagina.setDataNumberService(servicoDataNumber);
+        when(servicoDataNumber.listByGraph(42)).thenReturn(List.of(numero, numeroOutraPagina));
         Execution execucao = mock(Execution.class, withSettings().extraInterfaces(ExecutionCtrl.class));
         Desktop desktop = mock(Desktop.class);
         WebApp aplicacao = mock(WebApp.class, withSettings().extraInterfaces(WebAppCtrl.class));
@@ -82,9 +89,12 @@ class GraphsVMExportTest {
                     new ByteArrayInputStream(arquivo.getValue().getByteData()));
             assertThat(dadosExportados.getHeaders())
                     .containsExactly("graphId", "year", "month", "value", "clazz");
-            assertThat(dadosExportados.getRows()).hasSize(1);
+            assertThat(dadosExportados.getRows()).hasSize(2);
             assertThat(dadosExportados.getRows().get(0)).containsEntry("graphId", "42")
                     .containsEntry("year", "2026").containsEntry("value", "1");
+            assertThat(dadosExportados.getRows().get(1)).containsEntry("graphId", "42")
+                    .containsEntry("year", "2025").containsEntry("value", "10");
+            verify(servicoDataNumber).listByGraph(42);
             assertThat(pagina.getSelected()).isSameAs(grafico);
             assertThat(pagina.getDataNumbers()).containsExactly(numero);
         } finally {

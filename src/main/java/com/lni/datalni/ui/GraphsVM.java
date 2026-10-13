@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
 import org.zkoss.bind.BindUtils;
+import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.ContextParam;
 import org.zkoss.bind.annotation.ContextType;
@@ -35,7 +36,7 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
 
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,11 @@ public class GraphsVM {
     private final ListModelList<DataNumberDto> dataNumbers = new ListModelList<>();
     private DataNumberDto selectedNumber;
     private Set<DataNumberDto> selectedNumbers = new HashSet<>();
+    private int paginaAtivaNumeros = 0;
+    private int tamanhoPaginaNumeros = 50;
+    private long totalNumeros;
+    private String colunaOrdenacaoNumeros = "id";
+    private boolean ordenacaoNumerosAscendente = true;
 
     @Init
     public void init() {
@@ -87,7 +93,7 @@ public class GraphsVM {
 
     @Command
     @NotifyChange({"items", "totalSize", "activePage", "selected", "selectedItems",
-            "dataNumbers", "detailHeader"})
+            "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
     public void onSort(@org.zkoss.bind.annotation.BindingParam("column") String column) {
         if (column.equals(sortColumn)) {
             sortAscending = !sortAscending;
@@ -102,16 +108,71 @@ public class GraphsVM {
     }
 
     private void loadDetail() {
+        paginaAtivaNumeros = 0;
+        loadNumberPage();
+    }
+
+    private void loadNumberPage() {
         dataNumbers.clear();
-        if (selected != null) {
-            List<DataNumberDto> rows = graphService.listDataNumbers(selected.getId());
-            dataNumbers.addAll(rows == null ? Collections.emptyList() : rows);
+        dataNumbers.clearSelection();
+        selectedNumber = null;
+        selectedNumbers.clear();
+        totalNumeros = 0;
+        if (selected == null) {
+            paginaAtivaNumeros = 0;
+            return;
         }
+        Sort ordenacao = ordenacaoNumerosAscendente
+                ? Sort.by(colunaOrdenacaoNumeros).ascending()
+                : Sort.by(colunaOrdenacaoNumeros).descending();
+        if (!"id".equals(colunaOrdenacaoNumeros)) {
+            ordenacao = ordenacao.and(Sort.by("id"));
+        }
+        Page<DataNumberDto> pagina = dataNumberService.listByGraph(selected.getId(),
+                PageRequest.of(paginaAtivaNumeros, tamanhoPaginaNumeros, ordenacao));
+        if (pagina.getTotalElements() == 0) {
+            paginaAtivaNumeros = 0;
+        } else if (paginaAtivaNumeros >= pagina.getTotalPages()) {
+            paginaAtivaNumeros = pagina.getTotalPages() - 1;
+            pagina = dataNumberService.listByGraph(selected.getId(),
+                    PageRequest.of(paginaAtivaNumeros, tamanhoPaginaNumeros, ordenacao));
+        }
+        totalNumeros = pagina.getTotalElements();
+        dataNumbers.addAll(pagina.getContent());
+    }
+
+    @Command
+    @NotifyChange({"dataNumbers", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
+    public void onPageNumbers() {
+        loadNumberPage();
+    }
+
+    @Command
+    @NotifyChange({"dataNumbers", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
+    public void onChangeNumberPageSize() {
+        paginaAtivaNumeros = 0;
+        loadNumberPage();
+    }
+
+    @Command
+    @NotifyChange({"dataNumbers", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
+    public void onSortNumber(@BindingParam("column") String coluna) {
+        if (!Arrays.asList("id", "month", "year", "value", "clazz").contains(coluna)) {
+            return;
+        }
+        if (coluna.equals(colunaOrdenacaoNumeros)) {
+            ordenacaoNumerosAscendente = !ordenacaoNumerosAscendente;
+        } else {
+            colunaOrdenacaoNumeros = coluna;
+            ordenacaoNumerosAscendente = true;
+        }
+        paginaAtivaNumeros = 0;
+        loadNumberPage();
     }
 
     @Command
     @NotifyChange({"items", "totalSize", "activePage", "selected", "selectedItems",
-            "dataNumbers", "detailHeader"})
+            "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
     public void doSearch() {
         activePage = 0;
         selected = null;
@@ -121,7 +182,7 @@ public class GraphsVM {
 
     @Command
     @NotifyChange({"items", "activePage", "selected", "selectedItems",
-            "dataNumbers", "detailHeader"})
+            "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
     public void onPage() {
         selected = null;
         selectedItems.clear();
@@ -130,7 +191,7 @@ public class GraphsVM {
 
     @Command
     @NotifyChange({"items", "totalSize", "activePage", "selected", "selectedItems",
-            "dataNumbers", "detailHeader"})
+            "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
     public void onChangePageSize() {
         activePage = 0;
         selected = null;
@@ -147,7 +208,8 @@ public class GraphsVM {
     }
 
     @Command
-    @NotifyChange({"selected", "dataNumbers", "detailHeader"})
+    @NotifyChange({"selected", "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers",
+            "paginaAtivaNumeros", "totalNumeros"})
     public void onSelectGraph(@ContextParam(ContextType.TRIGGER_EVENT) SelectEvent<?, ?> event) {
         // By the time this command runs, the selectedItems binding has already
         // committed the new state — so use it to decide what the reference click
@@ -217,7 +279,8 @@ public class GraphsVM {
             String titulo = StringUtils.hasText(selected.getTitle())
                     ? selected.getTitle().replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "-")
                     : selected.getId().toString();
-            Filedownload.save(DataNumberXlsx.write(dataNumbers),
+            List<DataNumberDto> numeros = dataNumberService.listByGraph(selected.getId());
+            Filedownload.save(DataNumberXlsx.write(numeros),
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     "numeros-" + titulo + ".xlsx");
         } catch (Exception ex) {
@@ -271,9 +334,9 @@ public class GraphsVM {
                             }
                             selectedNumber = null;
                             selectedNumbers.clear();
-                            loadDetail();
+                            loadNumberPage();
                             BindUtils.postNotifyChange(this, "dataNumbers",
-                                    "selectedNumber", "selectedNumbers");
+                                    "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros");
                         } catch (Exception ex) {
                             Messagebox.show(ErrorTranslator.translate(ex),
                                     Messages.get("dialog.error.title"),
@@ -284,20 +347,21 @@ public class GraphsVM {
     }
 
     @GlobalCommand
-    @NotifyChange({"items", "totalSize", "dataNumbers", "detailHeader"})
+    @NotifyChange({"items", "totalSize", "dataNumbers", "detailHeader", "selectedNumber", "selectedNumbers",
+            "paginaAtivaNumeros", "totalNumeros"})
     public void refreshGraphs() {
         reload();
     }
 
     @GlobalCommand
-    @NotifyChange({"dataNumbers"})
+    @NotifyChange({"dataNumbers", "selectedNumber", "selectedNumbers", "paginaAtivaNumeros", "totalNumeros"})
     public void refreshDataNumbers() {
-        loadDetail();
+        loadNumberPage();
     }
 
     @GlobalCommand
     @NotifyChange({"selected", "selectedItems", "selectedNumber", "selectedNumbers",
-            "dataNumbers", "detailHeader"})
+            "dataNumbers", "detailHeader", "paginaAtivaNumeros", "totalNumeros"})
     public void resetSelection() {
         selected = null;
         items.clearSelection();
